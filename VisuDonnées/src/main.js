@@ -25,8 +25,11 @@ for(let annee in annees){
     selectAnn.append(temp);
 }
 
+var remap = {}
+
 Promise.all(promises)
-    .then(function(datas) {
+    .then(function(datas,i) {
+        getDepartements()
 
         d3.select("svg").append("g").attr("id", "axeX")
         d3.select("svg").append("g").attr("id", "axeY")
@@ -39,6 +42,13 @@ Promise.all(promises)
             let res = datas[0].map( d => d['Faits'])
             ///console.log(res)
             return res
+        }
+
+        function getDepartements()
+        {
+            let res = datas[0].columns.filter(element => element !== 'Faits')
+            console.log(res)
+            return res;
         }
 
         function getTabFaits(annee, fait){
@@ -172,9 +182,12 @@ Promise.all(promises)
         dessinerGraphGlobal();
 
         let faits = getFaits();
+        let dep = getDepartements();
 
         let selectMap = document.getElementById("selectFaitMap")
-        let selectGraph = document.getElementById("selectGraph");
+        let selectGraph = document.getElementById("selectGraph1");
+        let selectGraph2Fait = document.getElementById("selectGraph2Fait");
+        let selectGraph2Dep = document.getElementById("selectGraph2Dep");
 
         for(let fait in faits) {
             let temp = document.createElement("option");
@@ -188,6 +201,20 @@ Promise.all(promises)
             temp.innerText = faits[fait];
             temp.setAttribute("value", faits[fait]);
             selectMap.append(temp);
+        }
+
+        for(let fait in faits) {
+            let temp = document.createElement("option");
+            temp.innerText = faits[fait];
+            temp.setAttribute("value", faits[fait]);
+            selectGraph2Fait.append(temp);
+        }
+
+        for(let dep in departements) {
+            let temp = document.createElement("option");
+            temp.innerText = departements[dep];
+            temp.setAttribute("value", departements[dep]);
+            selectGraph2Dep.append(temp);
         }
 
         selectGraph.addEventListener("change", function () {
