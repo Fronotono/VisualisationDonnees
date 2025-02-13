@@ -5,50 +5,70 @@ var hauteur = 500;
 var largeur = 1000;
 
 const annees = ['2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'];
-const csvFiles = [
-    'faits2002.csv',
-    'faits2003.csv',
-    'faits2004.csv',
-    'faits2005.csv',
-    'faits2006.csv',
-    'faits2007.csv',
-    'faits2008.csv',
-    'faits2009.csv',
-    'faits2010.csv'];
+const csvFiles = ['faits2002.csv', 'faits2003.csv', 'faits2004.csv', 'faits2005.csv', 'faits2006.csv', 'faits2007.csv', 'faits2008.csv', 'faits2009.csv', 'faits2010.csv'];
 const promises = csvFiles.map(file => d3.dsv(";",file));
 
-var selectAnn = document.getElementById("selectAnneeMap");
-for(let annee in annees){
-    let temp = document.createElement("option");
-    temp.innerText = annees[annee];
-    temp.setAttribute("value", annee);
-    selectAnn.append(temp);
-}
-
-var remap = {}
-
 Promise.all(promises)
-    .then(function(datas,i) {
-        getDepartements()
+    .then(function(datas) {
+        let faits = getFaits();
+        let departements = getDepartements();
+        let refinedData = refiningData();
 
-        d3.select("svg").append("g").attr("id", "axeX")
-        d3.select("svg").append("g").attr("id", "axeY")
+        /**
+         * Remplissage des selects 
+         */
+        let selectAnneeMap = d3.select('#selectAnneeMap')
+        selectAnneeMap.selectAll('option').data(annees).enter().append('option').attr('value', (d,i) => i).text(d => d)
+        
+        let selectFaitMap = d3.select('#selectFaitMap')
+        selectFaitMap.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d) 
+        
+        let selectGraph1 = d3.select('#selectGraph1')
+        selectGraph1.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d) 
+        
+        let selectGraph2Fait = d3.select('#selectGraph2Fait')
+        selectGraph2Fait.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d) 
+        
+        let selectGraph2Dep = d3.select('#selectGraph2Dep')
+        selectGraph2Dep.selectAll('option').data(departements).enter().append('option').attr('value', d => d).text(d => d) 
+
+        /**
+         * Attache des evenements aux selects
+         */
+        function getValue(d3Obj){return d3Obj._groups[0][0].value;}
+        selectAnneeMap.on('change', function(){dessinerCarte(getValue(selectAnneeMap), getValue(selectFaitMap))})
+        selectFaitMap.on('change', function(){dessinerCarte(getValue(selectAnneeMap), getValue(selectFaitMap))})
+        selectGraph1.on('change', function(){dessinerGraphGlobal(getValue(selectGraph1))})
+
 
         /***
-         * Fonction qui retourne un objet de tous les faits existant
+         * Fonction qui retourne un tableau de tous les faits du dataset
          */
-        function getFaits()
-        {
-            let res = datas[0].map( d => d['Faits'])
-            ///console.log(res)
-            return res
-        }
+        function getFaits(){return datas[0].map( d => d['Faits'])}
 
-        function getDepartements()
-        {
-            let res = datas[0].columns.filter(element => element !== 'Faits')
-            console.log(res)
-            return res;
+        /***
+         * Fonction qui retourne un tableau de tous les départements du dataset
+         */
+        function getDepartements(){return datas[0].columns.filter(element => element !== 'Faits')}
+
+        /***
+         * Fonction qui retourne un objet composé organisé en suivant cette logique : this[annee][fait][departement] = nbFait
+         */
+        function refiningData() {
+            let refinedData = {}
+            for(let indiceAnnee in datas){
+                let refined = {}
+                for(let ind in datas[indiceAnnee].filter(element => element !== 'column')){
+                    let unit = {}
+                    for(let departement in datas[indiceAnnee][ind]){
+                        if(departement !== 'Faits')
+                            unit[departement] = datas[indiceAnnee][ind][departement]
+                    }
+                    refined[datas[indiceAnnee][ind]['Faits']] = unit
+                }
+                refinedData[annees[indiceAnnee]] = refined
+            }
+            return refinedData
         }
 
         function getTabFaits(annee, fait){
@@ -93,18 +113,18 @@ Promise.all(promises)
         /***
          * Fonction qui retourne le total d'un fait
          */
-                function getTotal(datas)
-                {
-                    let total = 0
-                    ///console.log(datas)
-                    for (let donne in datas) {
-                        if (donne !== "Faits") {
-                            total += +(datas[donne].replaceAll(" ", ""));
-                        }
-                    }
-                    ///console.log("Pour le fait x il y a eu un total sur l'année y : "+total+" faits")
-                    return total;
+        function getTotal(datas)
+        {
+            let total = 0
+            ///console.log(datas)
+            for (let donne in datas) {
+                if (donne !== "Faits") {
+                    total += +(datas[donne].replaceAll(" ", ""));
                 }
+            }
+            ///console.log("Pour le fait x il y a eu un total sur l'année y : "+total+" faits")
+            return total;
+        }
 
         /***
          * Fonction qui retourne un objet contenant les totaux des faits pour une année
@@ -134,10 +154,48 @@ Promise.all(promises)
             return totauxAll
         }
 
+        creerGraph2();
+
+        function creerGraph2(){
+            let graph = d3.select('#graph2')
+            let axeX = graph.select('svg').append('g').classed('axeX', true)
+            let axeY = graph.select('svg').append('g').classed('axeY', true)
+
+            var xScale = d3.scaleBand().domain(annees).range([marge.gauche, largeur]);
+            var yScale = d3.scaleLinear().domain([0, 
+                d3.max(datas, (d,i) => 
+                    ///getTotauxFaits(d)[getValue(selectGraph2Fait)]
+                    refinedData[i][getValue(selectGraph2Fait)][getValue(selectGraph2Dep)]
+                )])
+                .range([hauteur - marge.bas, marge.haut]);
+            var xAxis = g => g
+                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0));
+            var yAxis = g => g
+                .attr("transform", `translate(${marge.gauche},0)`)
+                .call(d3.axisLeft(yScale))
+
+            graph.select('svg').selectAll('rect').data(datas).enter().append('rect')
+                .attr('x', (d,i)=>100*i)
+                .attr('y', 100)
+                .attr('height', (d,i)=>yScale(0)-yScale(refinedData[annees[i]][getValue(selectGraph2Fait)][getValue(selectGraph2Dep)]))
+                .attr('width', 100)
+                .style('fill','blue')
+        }
+        function updateGraph2(){
+
+
+        }
+
+
+        //d3.select("svg").append("g").attr("id", "axeX")
+        //d3.select("svg").append("g").attr("id", "axeY")
+
         function dessinerGraphGlobal(subject) {
             if(subject === undefined) {
                 subject = "Recels";
             }
+            
             var xScale = d3.scaleBand().domain(annees).range([marge.gauche, largeur]);
             var yScale = d3.scaleLinear().domain([0, 
                 d3.max(datas, d => getTotauxFaits(d)[subject])]).range([hauteur - marge.bas, marge.haut]);
@@ -181,55 +239,9 @@ Promise.all(promises)
 
         dessinerGraphGlobal();
 
-        let faits = getFaits();
-        let dep = getDepartements();
 
-        let selectMap = document.getElementById("selectFaitMap")
-        let selectGraph = document.getElementById("selectGraph1");
-        let selectGraph2Fait = document.getElementById("selectGraph2Fait");
-        let selectGraph2Dep = document.getElementById("selectGraph2Dep");
+        dessinerCarte(getValue(selectAnneeMap), getValue(selectFaitMap));
 
-        for(let fait in faits) {
-            let temp = document.createElement("option");
-            temp.innerText = faits[fait];
-            temp.setAttribute("value", faits[fait]);
-            selectGraph.append(temp);
-        }
-
-        for(let fait in faits) {
-            let temp = document.createElement("option");
-            temp.innerText = faits[fait];
-            temp.setAttribute("value", faits[fait]);
-            selectMap.append(temp);
-        }
-
-        for(let fait in faits) {
-            let temp = document.createElement("option");
-            temp.innerText = faits[fait];
-            temp.setAttribute("value", faits[fait]);
-            selectGraph2Fait.append(temp);
-        }
-
-        for(let dep in departements) {
-            let temp = document.createElement("option");
-            temp.innerText = departements[dep];
-            temp.setAttribute("value", departements[dep]);
-            selectGraph2Dep.append(temp);
-        }
-
-        selectGraph.addEventListener("change", function () {
-            dessinerGraphGlobal(this.value);
-        });
-
-        selectMap.addEventListener("change", function () {
-            dessinerCarte(selectAnn.value, this.value)
-        })
-
-        selectAnn.addEventListener("change", function () {
-            dessinerCarte(this.value, selectMap.value);
-        });
-
-        dessinerCarte(0, "Recels");
         function dessinerCarte(indAnnee, subject) {
             // Définir les dimensions
             const width = 800, height = 600;
