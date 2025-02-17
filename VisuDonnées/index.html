@@ -5,29 +5,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>TP histogramme statique</title>
     </head>
-    <body>
+    <body>  
 
-        <nav aria-label="Page navigation example">
-            <ul class="pagination">
-              <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-              <li class="page-item"><a class="page-link" href="#">1</a></li>
-              <li class="page-item"><a class="page-link" href="#">2</a></li>
-              <li class="page-item"><a class="page-link" href="#">3</a></li>
-              <li class="page-item"><a class="page-link" href="#">Next</a></li>
-            </ul>
-          </nav>
-
-        <div id="graph1">
-            <h1>Evolution de ... en France</h1>
-            <svg style="height: 600px; width: 100%;"></svg>
+        <div id="graph1" class="container card p-4">
+            <h2>Evolution de ... en France</h2>
+            <svg style="height: 600px; width: 1000px"></svg>
             <label>
                 <p>Choisissez le fait que vous voulez etudier :</p>
                 <select id="selectGraph1" class="listFait"></select>
             </label>            
         </div>
 
-        <div id="graph2">
-            <svg style="height: 600px; width: 100%;"></svg>
+        <div id="graph2" class="container card p-4">
+            <h2>Evolution de ... en ...</h2>
+            <svg style="height: 600px; width: 1000px;"></svg>
             <label>
                 <p>Choisissez le fait que vous voulez etudier :</p>
                 <select id="selectGraph2Fait" class="listFait"></select>
@@ -38,12 +29,12 @@
             </label>            
         </div>
 
-        <div id="graph3">
-            <svg style="height: 600px; width: 100%;"></svg>
+        <div id="graph3" class="container card p-4">
+            <svg style="height: 600px; width: 1000px;"></svg>
         </div>
 
-        <div id="map">
-            <svg style="height: 600px; width: 100%"></svg>
+        <div id="map" class="container card p-4">
+            <svg style="height: 600px; width: 1000px;"></svg>
             <p id="nomDep"></p>
             <label>
                 <p>Choisisser l'année que vous voulez étudier :</p>

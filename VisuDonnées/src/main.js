@@ -1,4 +1,7 @@
 import * as d3 from 'd3';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Importer les styles
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importer les scripts (y compris Popper.js)
+
 
 var marge = {haut: 20, droite: 20, bas: 20, gauche: 50};
 var hauteur = 500;
@@ -132,7 +135,7 @@ Promise.all(promises)
         
         let selectGraph2Dep = d3.select('#selectGraph2Dep')
         selectGraph2Dep.selectAll('option').data(departements).enter().append('option').attr('value', d => d).text(d => d + " - " + nomDepartement[d]) 
-
+        
         let selectAnneeMap = d3.select('#selectAnneeMap')
         selectAnneeMap.selectAll('option').data(annees).enter().append('option').attr('value', d => d).text(d => d)
         
@@ -146,12 +149,13 @@ Promise.all(promises)
         selectGraph1.on('change', function(){updateGraph1()})
         selectGraph2Fait.on('change', function(){updateGraph2()})
         selectGraph2Dep.on('change', function(){updateGraph2()})
-        selectAnneeMap.on('change', function(){updateGraph3()})
-        selectFaitMap.on('change', function(){updateGraph3()})
+        selectAnneeMap.on('change', function(){updateGraphMap()})
+        selectFaitMap.on('change', function(){updateGraphMap()})
 
         creerGraph1();
         creerGraph2();
-        creerGraph3();
+
+        creerGraphMap();
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}        
 
@@ -276,8 +280,30 @@ Promise.all(promises)
             
             graph.select('.axeY').transition().duration(500).call(yAxis)
         }
-
+        creerGraph3();
         function creerGraph3(){
+            let graph = d3.select('#graph3')
+
+            var xScale = d3.scaleLinear().domain([0,7]).range([0,500]);
+            var yScale = d3.scaleLinear().domain([0,50]).range([0,500]);
+
+            var line = d3.line()
+                .x(function(d, i) {
+                    return xScale(i);
+                })
+                .y(function(d) {
+                    return yScale(d)
+                })
+
+            let test = [50,20,30,10,45,1,20]
+
+            graph.select('svg').append('path')
+                .attr('fill','none')
+                .attr('stroke','steelblue')
+                .attr('d', line(test))
+        }
+
+        function creerGraphMap(){
             let map = d3.select('#map')
             let max = d3.max(Object.values(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)]))
             let nomDep = d3.select('#nomDep')
@@ -295,7 +321,7 @@ Promise.all(promises)
             // Charger le fichier GeoJSON !!! async
             d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
                 .then(france => {
-                    map.select('svg').selectAll('path').data(france.features).enter().append("path")
+                    map.select('svg').selectAll('path').data(france.features).enter().append('path')
                         .attr('d', path)
                         .classed('departement',true)
                         .style('fill', d => {
@@ -354,7 +380,7 @@ Promise.all(promises)
                 .catch(error => console.log("Erreur de chargement :", error));  
         }
 
-        function updateGraph3(){
+        function updateGraphMap(){
             let map = d3.select('#map')
             let max = d3.max(Object.values(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)]))
             let nomDep = d3.select('#nomDep')
