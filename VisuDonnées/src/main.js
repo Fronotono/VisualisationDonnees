@@ -136,6 +136,9 @@ Promise.all(promises)
         let selectGraph2Dep = d3.select('#selectGraph2Dep')
         selectGraph2Dep.selectAll('option').data(departements).enter().append('option').attr('value', d => d).text(d => d + " - " + nomDepartement[d]) 
         
+        let selectGraph3Fait = d3.select('#selectGraph3Fait')
+        selectGraph3Fait.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d) 
+
         let selectAnneeMap = d3.select('#selectAnneeMap')
         selectAnneeMap.selectAll('option').data(annees).enter().append('option').attr('value', d => d).text(d => d)
         
@@ -149,12 +152,13 @@ Promise.all(promises)
         selectGraph1.on('change', function(){updateGraph1()})
         selectGraph2Fait.on('change', function(){updateGraph2()})
         selectGraph2Dep.on('change', function(){updateGraph2()})
+        selectGraph3Fait.on('change', function(){updateGraph3()})
         selectAnneeMap.on('change', function(){updateGraphMap()})
         selectFaitMap.on('change', function(){updateGraphMap()})
 
         creerGraph1();
         creerGraph2();
-
+        creerGraph3();
         creerGraphMap();
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}        
@@ -191,6 +195,29 @@ Promise.all(promises)
 
         function getTotalFait(annee, fait){
             return Object.values(refinedData[annee][fait]).reduce((acc,curr) => acc + curr,0)
+        }
+
+        function getMaxFait(fait){
+            let max = 0;
+            annees.forEach( annee => 
+                departements.forEach( departement => 
+                {
+                    if(max < refinedData[annee][fait][departement])
+                        max = refinedData[annee][fait][departement]
+                })
+            )
+            return max
+        }
+
+        /**
+         * Fonction qui retourne un tableau du nb d'un fait dans un departement
+         */
+        function getEvolFait(fait, departement){
+            let res = new Array(annees.length)
+            for(let ind in annees){
+                res[ind] = refinedData[annees[ind]][fait][departement]
+            }
+            return res;
         }
 
         function creerGraph1(){
@@ -280,33 +307,90 @@ Promise.all(promises)
             
             graph.select('.axeY').transition().duration(500).call(yAxis)
         }
-        creerGraph3();
-        function creerGraph3(){
-            let graph = d3.select('#graph3')
 
-            var xScale = d3.scaleLinear().domain([0,7]).range([0,500]);
-            var yScale = d3.scaleLinear().domain([0,50]).range([0,500]);
+        function creerGraph3(){
+            
+            let graph = d3.select('#graph3')
+            let axeX = graph.select('svg').append('g').classed('axeX', true)
+            let axeY = graph.select('svg').append('g').classed('axeY', true)
+            let nomDep = graph.select('.nomDep')
+            let subject = getValue(selectGraph3Fait)
+            let max = getMaxFait(subject)
+            let xScale = d3.scaleLinear().domain([0,8]).range([marge.gauche, largeur-marge.droite])
+            var yScale = d3.scaleLinear().domain([0,max]).range([hauteur - marge.bas, marge.haut]);
+            let xAxis = g => g
+                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0).ticks(9));
+            let yAxis = g => g
+                .attr("transform", `translate(${marge.gauche},0)`)
+                .call(d3.axisLeft(yScale))
 
             var line = d3.line()
-                .x(function(d, i) {
+                .x(function(d,i) {
                     return xScale(i);
                 })
-                .y(function(d) {
-                    return yScale(d)
+                .y(function(d,i) {
+                    return yScale(d);
                 })
 
-            let test = [50,20,30,10,45,1,20]
-
-            graph.select('svg').append('path')
+            graph.select('svg').selectAll('path').data(departements).enter().append('path')
                 .attr('fill','none')
                 .attr('stroke','steelblue')
-                .attr('d', line(test))
+                .attr('d', d => line(getEvolFait(subject,d)))
+                .attr('departement', d => d)
+                .classed('line',true)
+
+            graph.selectAll('.line')
+                .on('mouseenter', function(d,i){
+                    d3.select(this)
+                        .style('stroke','red')
+                        .style('stroke-width', '3px')
+                    nomDep.text(i + ' - ' +nomDepartement[i])
+                })
+                .on('mouseleave', function(d,i){
+                    d3.select(this)
+                        .style('stroke', 'steelblue')
+                        .style('stroke-width', '1px')
+                    nomDep.text('');
+                })
+                
+                axeX.call(xAxis);
+                axeY.call(yAxis);
+        }
+
+        function updateGraph3(){
+            let graph = d3.select('#graph3')
+            let subject = getValue(selectGraph3Fait)
+            let max = getMaxFait(subject)
+
+            let xScale = d3.scaleLinear().domain([0,8]).range([marge.gauche, largeur-marge.droite]);
+            var yScale = d3.scaleLinear().domain([0,max]).range([hauteur - marge.bas, marge.haut]);
+            let yAxis = g => g
+                .attr("transform", `translate(${marge.gauche},0)`)
+                .call(d3.axisLeft(yScale))
+
+            var line = d3.line()
+                .x(function(d,i) {
+                    return xScale(i);
+                })
+                .y(function(d,i) {
+                    return yScale(d);
+                })
+
+            graph.select('svg').selectAll('.line').data(departements)
+                .transition()
+                .duration(duration)
+                .attr('fill','none')
+                .attr('stroke','steelblue')
+                .attr('d', d => line(getEvolFait(subject,d)))
+
+            graph.select('.axeY').transition().duration(duration).call(yAxis)
         }
 
         function creerGraphMap(){
             let map = d3.select('#map')
             let max = d3.max(Object.values(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)]))
-            let nomDep = d3.select('#nomDep')
+            let nomDep = map.select('.nomDep')
 
             let echelleLineaireMulti = d3.scaleLinear()
                 .domain([0, max*2/10, max/2, max])
@@ -332,6 +416,7 @@ Promise.all(promises)
                     map.select('svg').selectAll("path")
                         .on('mouseenter', function(d,i){
                             d3.select(this).style('fill','blue')
+                            console.log(d)
                             nomDep.text(i.properties['nom']+" "+ refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][i.properties['code'].replace(/^0+/, '')])
                         })
                         .on('mouseleave', function(d,i){
@@ -383,7 +468,7 @@ Promise.all(promises)
         function updateGraphMap(){
             let map = d3.select('#map')
             let max = d3.max(Object.values(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)]))
-            let nomDep = d3.select('#nomDep')
+            let nomDep = map.select('.nomDep')
 
             let margeLegend = {'bas':0,'haut':20,'gauche':80}
             let largeurLegend = 10
