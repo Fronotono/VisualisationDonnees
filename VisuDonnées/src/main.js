@@ -1,12 +1,12 @@
 import * as d3 from 'd3';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importer les styles
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importer les scripts (y compris Popper.js)
+import {annees, nomDepartement} from './data.js'; 
 
 
 var marge = {haut: 20, droite: 20, bas: 20, gauche: 50};
 var hauteur = 500;
 var largeur = 1000;
-
 var duration = 500;
 
 const csvFiles = ['faits2002.csv', 'faits2003.csv', 'faits2004.csv', 'faits2005.csv', 'faits2006.csv', 'faits2007.csv', 'faits2008.csv', 'faits2009.csv', 'faits2010.csv'];
@@ -14,111 +14,8 @@ const promises = csvFiles.map(file => d3.dsv(";",file));
 
 Promise.all(promises)
     .then(function(datas) {
-
-        const annees = ['2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'];
-        const nomDepartement = {
-            "1": "Ain",
-            "2": "Aisne",
-            "3": "Allier",
-            "4": "Alpes-de-Haute-Provence",
-            "5": "Hautes-Alpes",
-            "6": "Alpes-Maritimes",
-            "7": "Ardèche",
-            "8": "Ardennes",
-            "9": "Ariège",
-            "10": "Aube",
-            "11": "Aude",
-            "12": "Aveyron",
-            "13": "Bouches-du-Rhône",
-            "14": "Calvados",
-            "15": "Cantal",
-            "16": "Charente",
-            "17": "Charente-Maritime",
-            "18": "Cher",
-            "19": "Corrèze",
-            "2A": "Corse-du-Sud",
-            "2B": "Haute-Corse",
-            "21": "Côte-d'Or",
-            "22": "Côtes-d'Armor",
-            "23": "Creuse",
-            "24": "Dordogne",
-            "25": "Doubs",
-            "26": "Drôme",
-            "27": "Eure",
-            "28": "Eure-et-Loir",
-            "29": "Finistère",
-            "30": "Gard",
-            "31": "Haute-Garonne",
-            "32": "Gers",
-            "33": "Gironde",
-            "34": "Hérault",
-            "35": "Ille-et-Vilaine",
-            "36": "Indre",
-            "37": "Indre-et-Loire",
-            "38": "Isère",
-            "39": "Jura",
-            "40": "Landes",
-            "41": "Loir-et-Cher",
-            "42": "Loire",
-            "43": "Haute-Loire",
-            "44": "Loire-Atlantique",
-            "45": "Loiret",
-            "46": "Lot",
-            "47": "Lot-et-Garonne",
-            "48": "Lozère",
-            "49": "Maine-et-Loire",
-            "50": "Manche",
-            "51": "Marne",
-            "52": "Haute-Marne",
-            "53": "Mayenne",
-            "54": "Meurthe-et-Moselle",
-            "55": "Meuse",
-            "56": "Morbihan",
-            "57": "Moselle",
-            "58": "Nièvre",
-            "59": "Nord",
-            "60": "Oise",
-            "61": "Orne",
-            "62": "Pas-de-Calais",
-            "63": "Puy-de-Dôme",
-            "64": "Pyrénées-Atlantiques",
-            "65": "Hautes-Pyrénées",
-            "66": "Pyrénées-Orientales",
-            "67": "Bas-Rhin",
-            "68": "Haut-Rhin",
-            "69": "Rhône",
-            "70": "Haute-Saône",
-            "71": "Saône-et-Loire",
-            "72": "Sarthe",
-            "73": "Savoie",
-            "74": "Haute-Savoie",
-            "75": "Paris",
-            "76": "Seine-Maritime",
-            "77": "Seine-et-Marne",
-            "78": "Yvelines",
-            "79": "Deux-Sèvres",
-            "80": "Somme",
-            "81": "Tarn",
-            "82": "Tarn-et-Garonne",
-            "83": "Var",
-            "84": "Vaucluse",
-            "85": "Vendée",
-            "86": "Vienne",
-            "87": "Haute-Vienne",
-            "88": "Vosges",
-            "89": "Yonne",
-            "90": "Territoire de Belfort",
-            "91": "Essonne",
-            "92": "Hauts-de-Seine",
-            "93": "Seine-Saint-Denis",
-            "94": "Val-de-Marne",
-            "95": "Val-d'Oise",
-            "971": "Guadeloupe",
-            "972": "Martinique",
-            "973": "Guyane",
-            "974": "La Réunion",
-            "976": "Mayotte"
-        };
+        let mapPromise = d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
+        
         const faits = getFaits();
         const departements = getDepartements();
         const refinedData = refiningData();
@@ -158,10 +55,14 @@ Promise.all(promises)
 
         creerGraph1();
         creerGraph2();
+        let col = {}
+        var graph3Model = {col}
+        var colors = d3.schemeCategory10
         creerGraph3();
         creerGraphMap();
 
-        function getValue(d3Obj){return d3Obj._groups[0][0].value;}        
+        function getValue(d3Obj){return d3Obj._groups[0][0].value;}
+        function fromCodeJSONtoCodeData(d){return d.properties['code'].replace(/^0+/, '')}
 
         /***
          * Fonction qui retourne un tableau de tous les faits du dataset
@@ -197,6 +98,9 @@ Promise.all(promises)
             return Object.values(refinedData[annee][fait]).reduce((acc,curr) => acc + curr,0)
         }
 
+        /**
+         * Retourne le max du fait partout sur toutes les années
+         */
         function getMaxFait(fait){
             let max = 0;
             annees.forEach( annee => 
@@ -309,7 +213,6 @@ Promise.all(promises)
         }
 
         function creerGraph3(){
-            
             let graph = d3.select('#graph3')
             let axeX = graph.select('svg').append('g').classed('axeX', true)
             let axeY = graph.select('svg').append('g').classed('axeY', true)
@@ -333,32 +236,62 @@ Promise.all(promises)
                     return yScale(d);
                 })
 
-            graph.select('svg').selectAll('path').data(departements).enter().append('path')
-                //.attr('fill','none')
-                //.attr('stroke','steelblue')
+            graph.select('#affichage').selectAll('path').data(departements).enter().append('path')
+                .attr('fill','none')
+                .each(function(d){graph3Model.col[d] = 0})
+                .style('stroke', (d,i) => colors[graph3Model.col[d]])
                 .attr('d', d => line(getEvolFait(subject,d)))
                 .attr('departement', d => d)
                 .classed('line',true)
+                
 
             graph.selectAll('.line')
                 .on('mouseenter', function(d,i){
-                    d3.select(this)
+                    /*d3.select(this)
+                        .raise()
                         .style('stroke','green')
-                        .style('stroke-width', '3px')
+                        .style('stroke-width', '3px')*/
                     nomDep.text(i + ' - ' +nomDepartement[i])
                 })
                 .on('mouseleave', function(d,i){
-                    d3.select(this)
-                        .style('stroke', 'steelblue')
-                        .style('stroke-width', '1px')
+                    /*d3.select(this)
+                        .style('stroke', (d,i) => colors[graph3Model.col[i]])
+                        .style('stroke-width', function(){
+                            if(graph3Model.focus[i])
+                                return '3px'
+                            return '1px'
+                        })*/
                     nomDep.text('');
                 })
                 
                 axeX.call(xAxis);
                 axeY.call(yAxis);
+
+            mapPromise.then(france => {
+                let projection = d3.geoMercator()
+                .center([2.454071, 46.279229]) // Centrage sur la France
+                .scale(2000) // Zoom
+                .translate([400, 300]);
+                let path = d3.geoPath().projection(projection);
+
+                graph.select('#depSelector').selectAll('path').data(france.features).enter().append('path')
+                    .attr('d', path)
+                    .classed('departement',true)
+                    .style('fill', (d) => colors[graph3Model.col[fromCodeJSONtoCodeData(d)]])
+                    .style("stroke", "#333")
+
+                graph.select('#depSelector').selectAll('path')
+                    .on('click', function(d,i){
+                        graph3Model.col[fromCodeJSONtoCodeData(i)] = (graph3Model.col[fromCodeJSONtoCodeData(i)]+1) % colors.length;
+                        d3.select(this)
+                            .style('fill', (d) => colors[graph3Model.col[fromCodeJSONtoCodeData(d)]])
+                        updateGraph3()
+                    })
+            })
         }
 
         function updateGraph3(){
+            console.log(graph3Model)
             let graph = d3.select('#graph3')
             let subject = getValue(selectGraph3Fait)
             let max = getMaxFait(subject)
@@ -380,9 +313,20 @@ Promise.all(promises)
             graph.select('svg').selectAll('.line').data(departements)
                 .transition()
                 .duration(duration)
-                .attr('fill','none')
-                .attr('stroke','steelblue')
+                .style('fill','none')
+                .style('stroke', (d,i) => colors[graph3Model.col[d]])
+                .style('stroke-width', function(d,i){
+                    if(graph3Model.col[d] !== 0){
+                        return '3px'
+                    } 
+                    return '1px'
+                })
                 .attr('d', d => line(getEvolFait(subject,d)))
+/*                .each( function(d,i){
+                    if(graph3Model.col[d] !== 0){
+                        d3.select(this).raise()
+                    }
+                })*/
 
             graph.select('.axeY').transition().duration(duration).call(yAxis)
         }
@@ -403,25 +347,25 @@ Promise.all(promises)
             let path = d3.geoPath().projection(projection);
             
             // Charger le fichier GeoJSON !!! async
-            d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
-                .then(france => {
+            //d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
+                
+            mapPromise.then(france => {
                     map.select('svg').selectAll('path').data(france.features).enter().append('path')
                         .attr('d', path)
                         .classed('departement',true)
                         .style('fill', d => {
-                            return echelleLineaireMulti(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][d.properties['code'].replace(/^0+/, '')]);
+                            return echelleLineaireMulti(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][fromCodeJSONtoCodeData(d)]);
                         })
                         .style("stroke", "#333")
 
-                    map.select('svg').selectAll("path")
+                    map.selectAll('.departement')
                         .on('mouseenter', function(d,i){
                             d3.select(this).style('fill','blue')
-                            console.log(d)
-                            nomDep.text(i.properties['nom']+" "+ refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][i.properties['code'].replace(/^0+/, '')])
+                            nomDep.text(i.properties['nom']+" "+ refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][fromCodeJSONtoCodeData(i)])
                         })
                         .on('mouseleave', function(d,i){
                             d3.select(this).style('fill', d => {
-                                return echelleLineaireMulti(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][d.properties['code'].replace(/^0+/, '')]);
+                                return echelleLineaireMulti(refinedData[getValue(selectAnneeMap)][getValue(selectFaitMap)][fromCodeJSONtoCodeData(d)]);
                             })
                             nomDep.text('');
                         })

@@ -1,13 +1,14 @@
-.line {
+/*.line {
   stroke : steelblue;
   fill : none;
 }
 
 .line.observe {
   stroke : red;
+  stroke-width: 3px;
 }
 
-/*:root {
+:root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
