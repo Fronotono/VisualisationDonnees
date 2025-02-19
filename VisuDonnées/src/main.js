@@ -334,7 +334,7 @@ Promise.all(promises)
                 })
 
             graph.select('svg').selectAll('path').data(departements).enter().append('path')
-                .attr('fill','none')
+                //.attr('fill','none')
                 //.attr('stroke','steelblue')
                 .attr('d', d => line(getEvolFait(subject,d)))
                 .attr('departement', d => d)
