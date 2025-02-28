@@ -3,55 +3,93 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>TP histogramme statique</title>
+        <title>Etude graphique des faits en France</title>
         <link rel="styleSheet" href="src/style.css" />
     </head>
-    <body>  
+    <body>
 
-        <div id="graph1" class="container card p-4">
-            <h2>Evolution de ... en France</h2>
-            <svg style="height: 600px; width: 1000px"></svg>
-            <label>
-                <p>Choisissez le fait que vous voulez etudier :</p>
-                <select id="selectGraph1" class="listFait"></select>
-            </label>            
+        <div id="graph11" class="container-fluid">
+            <h2>Evolution temporel des faits divers en France</h2>
+            <svg></svg>         
         </div>
 
-        <div id="graph2" class="container card p-4">
-            <h2>Evolution de ... en ...</h2>
-            <svg style="height: 600px; width: 1000px;"></svg>
-            <label>
-                <p>Choisissez le fait que vous voulez etudier :</p>
-                <select id="selectGraph2Fait" class="listFait"></select>
-            </label>
-            <label>
-                <p>Choisissez le département que vous voulez etudier :</p>
-                <select id="selectGraph2Dep" class="listDep"></select>
-            </label>            
-        </div>
-
-        <div id="graph3" class="container card p-4">
-            <svg id="affichage" style="height: 600px; width: 1000px;"></svg>
-            <p class="nomDep"></p>
-            <label>
-                <p>Choisissez le fait que vous voulez etudier :</p>
-                <select id="selectGraph3Fait" class="listFait"></select>
-            </label>
-            <svg id="depSelector" style="height: 600px; width: 1000px;"></svg>
+        <div id="graph1" class="container-fluid p-4">
+            <h2>Evolution temporel d'un fait en France</h2>
+            <svg></svg>
+            <div id="selecteurs" class="d-flex justify-content-around">
+                <label>
+                    <p>Le fait étudié :</p>
+                    <select id="selectGraph1" class="listFait"></select>
+                </label>            
+                <label>
+                    <p>Le département étudié :</p>
+                    <select id="selectGraph12" class="listDep"></select>
+                </label>                
+            </div>
             
         </div>
 
-        <div id="map" class="container card p-4">
-            <svg style="height: 600px; width: 1000px;"></svg>
-            <p class="nomDep"></p>
-            <label>
-                <p>Choisisser l'année que vous voulez étudier :</p>
-                <select id="selectAnneeMap"></select>
-            </label>
-            <label>
-                <p>Choisissez le fait que vous voulez etudier :</p>
-                <select id="selectFaitMap" class="listFait"></select>
-            </label>
+        <div id="graph2" class="container-fluid p-4 ">
+            <h2>Evolution temporelle d'un fait dans un département</h2>
+            <svg></svg>
+            <div id="selecteurs" class="d-flex justify-content-around">
+                <label>
+                    <p>Le fait étudié :</p>
+                    <select id="selectGraph2Fait" class="listFait"></select>
+                </label>
+                <label>
+                    <p>Le département étudié :</p>
+                    <select id="selectGraph2Dep" class="listDep"></select>
+                </label>                 
+            </div>
+        </div>
+
+        <div id="graph3">
+            <h2>Evolutions temporels d'un fait divers dans les départements</h2>
+            <p class="nomDep">&nbsp;</p>
+            <div class="container-fluid p-4">
+                <svg id="affichage"></svg>
+                <svg id="depSelector"></svg>
+                <div id="selecteurs" class="d-flex justify-content-around">
+                    <label >
+                        <p>Le fait étudié :</p>
+                        <select id="selectGraph3Fait" class="listFait"></select>
+                    </label>                    
+                </div>
+            </div>
+        </div>
+
+        <div id="graph4">
+            <h2>Nombre des faits divers dans un départements pour une période</h2>
+            <div class="container-fluid p-4">
+                <svg></svg>
+                <div id="selecteurs" class="d-flex justify-content-around">
+                    <label>
+                        <p>L'année étudié :</p>
+                        <select class="listAnnee"></select>
+                    </label>
+                    <label>
+                        <p>Le département étudié :</p>
+                        <select class="listDep"></select>
+                    </label>                 
+                </div>
+            </div>
+        </div>
+
+        <div id="map" class="container-fluid p-4 ">
+            <h2>Visualisation géographique d'un fait divers en France</h2>
+            <p class="nomDep">&nbsp;</p>
+            <svg></svg>
+            <div id="selecteurs" class="d-flex justify-content-around">
+                <label>
+                    <p>L'année étudié :</p>
+                    <select id="selectAnneeMap" class="listAnnee"></select>
+                </label>
+                <label>
+                    <p>Le fait étudié :</p>
+                    <select id="selectFaitMap" class="listFait"></select>
+                </label>  
+            </div>
         </div>
 
         <script type="module" src="src/main.js" charset="utf-8"></script>
