@@ -2,6 +2,8 @@ import * as d3 from 'd3';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importer les styles
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importer les scripts (y compris Popper.js)
 import {annees, nomDepartement} from './data.js'; 
+//import React, { useEffect, useRef } from "react";
+
 
 
 var marge = {haut: 20, droite: 20, bas: 20, gauche: 50};
@@ -15,10 +17,13 @@ const promises = csvFiles.map(file => d3.dsv(";",file));
 Promise.all(promises)
     .then(function(datas) {
         let mapPromise = d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
+        let uidCounter = 0;
+        let uidCounter2 = 0;
         
         const faits = getFaits();
         const departements = getDepartements();
         const refinedData = refiningData();
+        const dataToHiearachier = dataToHiearachie();
 
         /**
          * Remplissage des selects 
@@ -42,6 +47,9 @@ Promise.all(promises)
         let selectFaitMap = d3.select('#selectFaitMap')
         selectFaitMap.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d)         
 
+        let selectTreeMap = d3.select('#selectTreeMap')
+        selectTreeMap.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d)
+        
         /**
          * Attache des evenements aux selects
          */
@@ -60,6 +68,7 @@ Promise.all(promises)
         var colors = d3.schemeCategory10
         creerGraph3();
         creerGraphMap();
+        creerTreeMap();
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}
         function fromCodeJSONtoCodeData(d){return d.properties['code'].replace(/^0+/, '')}
@@ -93,6 +102,32 @@ Promise.all(promises)
             }
             return refinedData
         }
+
+        
+        function dataToHiearachie() {
+            let res = {}
+            res['name'] = 'Annees'
+            res['children'] = Array(8)
+            annees.forEach( function (annee, i) {
+                let temp = {}
+                temp['name'] = annee
+                temp['children'] = Array(103)
+                faits.forEach( function (fait, ii) { // 103 fait
+                    let temp2 = {}
+                    temp2['name'] = fait
+                    temp2['children'] = Array(95)
+                    departements.forEach( function (departement, iii) { // 95 dep
+                        temp2['children'][iii] = {} 
+                        temp2['children'][iii]['name'] = departement
+                        temp2['children'][iii]['children'] = refinedData[annee][fait][departement]
+                    })
+                    temp['children'][ii] = temp2;
+                })
+                res['children'][i] = temp;
+            })
+            return res;
+        }
+        console.log(dataToHiearachier)
 
         function getTotalFait(annee, fait){
             return Object.values(refinedData[annee][fait]).reduce((acc,curr) => acc + curr,0)
@@ -450,6 +485,133 @@ Promise.all(promises)
 
         }
 
+        function creerTreeMap() {
+            let treemap = d3.select('#treemap');
+            let subject = getValue(selectTreeMap);
+            let max = getMaxFait(subject);
+        
+            let root = d3.hierarchy({ children: dataToHiearachier })  
+                .sum(d => d.nombre_de_crimes)
+                .sort((a, b) => b.value - a.value);
+        
+            d3.treemap()
+                .size([largeur, hauteur])
+                .padding(2)(root);
+        
+            let colorScale = d3.scaleSequential(d3.interpolateOranges)
+                .domain([0, max]);
+        
+            let cell = treemap.select('svg').selectAll("g")
+                .data(root.leaves())
+                .join("g")
+                .attr("transform", d => `translate(${d.x0},${d.y0})`);
+        
+            // Ajout des rectangles colorés
+            cell.append("rect")
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
+                .attr("fill", d => colorScale(d.value))
+                .style("stroke", "#333");
+        
+            // Ajout du texte (Numéro, Nom, Crimes)
+            cell.append("text")
+                .attr("x", d => (d.x1 - d.x0) / 2)
+                .attr("y", d => (d.y1 - d.y0) / 2 - 5)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "12px")
+                .text(d => `${d.data.numero} - ${d.data.département}`);
+        
+            // Nombre de crimes affiché en dessous
+            cell.append("text")
+                .attr("x", d => (d.x1 - d.x0) / 2)
+                .attr("y", d => (d.y1 - d.y0) / 2 + 10)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "10px")
+                .attr("fill-opacity", 0.8)
+                .text(d => `${d.value} crimes`);
+        }
+
+        /*function creerTreeMap(){
+            let treemap = d3.select('#treemap');
+            // Specify the chart’s dimensions.
+            const width = 1154;
+            const height = 1154;
+
+            // Specify the color scale.
+            const color = d3.scaleOrdinal(dataToHiearachier.children.map(d => d.name), d3.schemeTableau10);
+
+            const tile = d3.treemapSquarify; // Méthode standard de D3.js
+
+            // Compute the layout.
+            const root = d3.treemap()
+                .tile(tile) // e.g., d3.treemapSquarify
+                .size([width, height])
+                .padding(1)
+                .round(true)
+            (d3.hierarchy(dataToHiearachier)
+                .sum(d => d.value)
+                .sort((a, b) => b.value - a.value));
+
+            // Create the SVG container.
+            const svg = treemap.select('svg');
+
+            // Add a cell for each leaf of the hierarchy.
+            const leaf = svg.selectAll("g")
+                .data(root.leaves())
+                .join("g")
+                .attr("transform", d => `translate(${d.x0},${d.y0})`);
+
+            // Append a tooltip.
+            const format = d3.format(",d");
+            leaf.append("title")
+                .text(d => `${d.ancestors().reverse().map(d => d.data.name).join(".")}\n${format(d.value)}`);
+
+
+                leaf.append("rect")
+                    .attr("id", function(d) {
+                        // Générez un ID unique en utilisant le compteur
+                        return "leaf-" + (uidCounter++);
+                    })
+                    .attr("fill", function(d) {
+                        while (d.depth > 1) d = d.parent;
+                        return color(d.data.name);
+                    })
+                    .attr("fill-opacity", 0.6)
+                    .attr("width", function(d) {
+                        return d.x1 - d.x0;
+                    })
+                    .attr("height", function(d) {
+                        return d.y1 - d.y0;
+                    });
+                               
+
+            // Append a clipPath to ensure text does not overflow.
+            leaf.append("clipPath")
+                .attr("id", function(d) {
+                    // Générer un ID unique en utilisant le compteur uidCounter2
+                    return "clip-" + (uidCounter2++);
+                })
+                .append("use")
+                .attr("xlink:href", function(d) {
+                    return "#" + d.leafUid;  // Utiliser l'ID unique du rect créé précédemment
+                });
+
+
+            // Append multiline text. The last line shows the value and has a specific formatting.
+            leaf.append("text")
+                .attr("clip-path", d => d.clipUid)
+                .selectAll("tspan")
+                .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g).concat(format(d.value)))
+                .join("tspan")
+                .attr("x", 3)
+                .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
+                .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
+                .text(d => d);
+            }*/
     }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);
 });
