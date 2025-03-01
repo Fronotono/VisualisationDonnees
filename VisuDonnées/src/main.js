@@ -24,9 +24,6 @@ Promise.all(promises)
         const departements = getDepartements();
         const refinedData = refiningData();
 
-        console.log()
-        console.log()
-
         let violsFaits = faits.filter(d => d.includes('Viols ')).concat(faits.filter(d => d.includes('sexuels')))
         console.log(violsFaits)
         let volsFaits = faits.filter(d => d.includes('Vols')).concat(faits.filter(d => d.includes('vols')))
