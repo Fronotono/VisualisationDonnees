@@ -73,7 +73,6 @@ Promise.all(promises)
             return refinedData
         }
 
-        var dataToHiearachier;
         function dataToHiearachie() {
             let res = {}
             res['name'] = 'Annees'
@@ -349,7 +348,7 @@ Promise.all(promises)
                         model[3].col[fromCodeJSONtoCodeData(i)] = model[3]['selectCouleur'];
                         d3.select(this)
                             .style('fill', (d) => model[3].col[fromCodeJSONtoCodeData(d)])
-                        updateGraph3()
+                        updateGraph()
                     })
 
                 model[3]['selectCouleur'] = colors[0];
@@ -402,6 +401,59 @@ Promise.all(promises)
                 graph.select('.axeY').transition().duration(duration).call(yAxis)
             }
         }
+
+        function creerGraph4(){
+            let graph = d3.select('#graph4')
+
+            let axeX = graph.select('svg').append('g').classed('axeX', true)
+            let axeY = graph.select('svg').append('g').classed('axeY', true)
+
+            let annee = getValue(graph.select('.listAnnee'))
+            let dep = getValue(graph.select('.listDep'))
+
+            graph.select('.listAnnee').on('change',function(){updateGraph()})
+            graph.select('.listDep').on('change',function(){updateGraph()})
+
+            let max = d3.max(faits, d => refinedData[annee][d][dep])
+            let xScale = d3.scaleBand().domain(faits).range([marge.gauche, largeur]);
+            let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
+            let xAxis = g => g
+                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0));
+            let yAxis = g => g
+                .attr("transform", `translate(${marge.gauche},0)`)
+                .call(d3.axisLeft(yScale))
+
+            graph.select('svg').selectAll().data(faits).enter().append('rect')
+                .attr('x', d => xScale(d))
+                .attr('y', d => yScale(refinedData[annee][d][dep]))
+                .attr('height', d => yScale(0)-yScale(refinedData[annee][d][dep]))
+                .attr('width', xScale.bandwidth() - 1)
+                .style('fill','blue')
+
+            axeX.call(xAxis);
+            axeY.call(yAxis);
+
+            function updateGraph(){
+                let graph = d3.select("#graph4")
+                let annee = getValue(graph.select('.listAnnee'))
+                let dep = getValue(graph.select('.listDep'))
+                let max = d3.max(faits, d => refinedData[annee][d][dep])
+                let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
+                
+                let yAxis = g => g
+                    .attr("transform", `translate(${marge.gauche},0)`)
+                    .call(d3.axisLeft(yScale))
+                
+                graph.selectAll('rect').data(faits)
+                    .transition()
+                    .duration(duration)
+                    .attr('y', d => yScale(refinedData[annee][d][dep]))
+                    .attr('height', d => yScale(0)-yScale(refinedData[annee][d][dep]))
+                
+                graph.select('.axeY').transition().duration(500).call(yAxis)
+            }
+        }        
 
         function creerGraphMap(){
             let graph = d3.select('#map')
@@ -525,59 +577,6 @@ Promise.all(promises)
                     
                     graph.select('.axe').transition().duration(duration).call(axis);  
 
-            }
-        }
-
-        function creerGraph4(){
-            let graph = d3.select('#graph4')
-
-            let axeX = graph.select('svg').append('g').classed('axeX', true)
-            let axeY = graph.select('svg').append('g').classed('axeY', true)
-
-            let annee = getValue(graph.select('.listAnnee'))
-            let dep = getValue(graph.select('.listDep'))
-
-            graph.select('.listAnnee').on('change',function(){updateGraph()})
-            graph.select('.listDep').on('change',function(){updateGraph()})
-
-            let max = d3.max(faits, d => refinedData[annee][d][dep])
-            let xScale = d3.scaleBand().domain(faits).range([marge.gauche, largeur]);
-            let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
-            let xAxis = g => g
-                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
-                .call(d3.axisBottom(xScale).tickSizeOuter(0));
-            let yAxis = g => g
-                .attr("transform", `translate(${marge.gauche},0)`)
-                .call(d3.axisLeft(yScale))
-
-            graph.select('svg').selectAll().data(faits).enter().append('rect')
-                .attr('x', d => xScale(d))
-                .attr('y', d => yScale(refinedData[annee][d][dep]))
-                .attr('height', d => yScale(0)-yScale(refinedData[annee][d][dep]))
-                .attr('width', xScale.bandwidth() - 1)
-                .style('fill','blue')
-
-            axeX.call(xAxis);
-            axeY.call(yAxis);
-
-            function updateGraph(){
-                let graph = d3.select("#graph4")
-                let annee = getValue(graph.select('.listAnnee'))
-                let dep = getValue(graph.select('.listDep'))
-                let max = d3.max(faits, d => refinedData[annee][d][dep])
-                let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
-                
-                let yAxis = g => g
-                    .attr("transform", `translate(${marge.gauche},0)`)
-                    .call(d3.axisLeft(yScale))
-                
-                graph.selectAll('rect').data(faits)
-                    .transition()
-                    .duration(duration)
-                    .attr('y', d => yScale(refinedData[annee][d][dep]))
-                    .attr('height', d => yScale(0)-yScale(refinedData[annee][d][dep]))
-                
-                graph.select('.axeY').transition().duration(500).call(yAxis)
             }
         }
 

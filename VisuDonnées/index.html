@@ -8,87 +8,119 @@
     </head>
     <body>
 
-        <div id="graph11" class="container-fluid">
-            <h2>Evolution temporel des faits divers en France</h2>
-            <svg></svg>         
-        </div>
+        <h1>Etude graphique des faits en France</h1>
 
-        <div id="graph1" class="container-fluid p-4">
-            <h2>Evolution temporel d'un fait en France</h2>
-            <svg></svg>
-            <div id="selecteurs" class="d-flex justify-content-around">
-                <label>
-                    <p>Le fait étudié :</p>
-                    <select id="selectGraph1" class="listFait"></select>
-                </label>            
-                <label>
-                    <p>Le département étudié :</p>
-                    <select id="selectGraph12" class="listDep"></select>
-                </label>                
+        <nav>
+            <div class="nav nav-tabs nav-justified" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Accueil</button>
+                <button class="nav-link" id="nav-q1-tab" data-bs-toggle="tab" data-bs-target="#nav-q1" type="button" role="tab" aria-controls="nav-q1" aria-selected="false">Question 1</button>
+                <button class="nav-link" id="nav-q2-tab" data-bs-toggle="tab" data-bs-target="#nav-q2" type="button" role="tab" aria-controls="nav-q2" aria-selected="false">Question 2</button>
+                <button class="nav-link" id="nav-q3-tab" data-bs-toggle="tab" data-bs-target="#nav-q3" type="button" role="tab" aria-controls="nav-q3" aria-selected="false">Question 3</button>
             </div>
-            
-        </div>
+        </nav>
 
-        <div id="graph2" class="container-fluid p-4 ">
-            <h2>Evolution temporelle d'un fait dans un département</h2>
-            <svg></svg>
-            <div id="selecteurs" class="d-flex justify-content-around">
-                <label>
-                    <p>Le fait étudié :</p>
-                    <select id="selectGraph2Fait" class="listFait"></select>
-                </label>
-                <label>
-                    <p>Le département étudié :</p>
-                    <select id="selectGraph2Dep" class="listDep"></select>
-                </label>                 
+        <div class="tab-content" id="nav-tabContent">
+
+            <!-- Acceuil -->
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+
             </div>
-        </div>
 
-        <div id="graph3">
-            <h2>Evolutions temporels d'un fait divers dans les départements</h2>
-            <p class="nomDep">&nbsp;</p>
-            <div class="container-fluid p-4">
-                <svg id="affichage"></svg>
-                <svg id="depSelector"></svg>
-                <div id="selecteurs" class="d-flex justify-content-around">
-                    <label >
-                        <p>Le fait étudié :</p>
-                        <select id="selectGraph3Fait" class="listFait"></select>
-                    </label>                    
+            <!-- Question 1 -->
+            <div class="tab-pane fade" id="nav-q1" role="tabpanel" aria-labelledby="nav-q1-tab">
+
+                <div id="graph11" class="container-fluid">
+                    <h2>Evolution temporel des faits divers en France</h2>
+                    <svg></svg>         
                 </div>
-            </div>
-        </div>
 
-        <div id="graph4">
-            <h2>Nombre des faits divers dans un départements pour une période</h2>
-            <div class="container-fluid p-4">
-                <svg></svg>
-                <div id="selecteurs" class="d-flex justify-content-around">
-                    <label>
-                        <p>L'année étudié :</p>
-                        <select class="listAnnee"></select>
-                    </label>
-                    <label>
-                        <p>Le département étudié :</p>
-                        <select class="listDep"></select>
-                    </label>                 
+            </div>
+
+            <!-- Question 2 -->
+            <div class="tab-pane fade" id="nav-q2" role="tabpanel" aria-labelledby="nav-q2-tab">
+
+                <div id="graph1" class="container-fluid p-4">
+                    <h2>Evolution temporel d'un fait en France</h2>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select id="selectGraph1" class="listFait"></select>
+                        </label>            
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select id="selectGraph12" class="listDep"></select>
+                        </label>                
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div id="map" class="container-fluid p-4 ">
-            <h2>Visualisation géographique d'un fait divers en France</h2>
-            <p class="nomDep">&nbsp;</p>
-            <svg></svg>
-            <div id="selecteurs" class="d-flex justify-content-around">
-                <label>
-                    <p>L'année étudié :</p>
-                    <select id="selectAnneeMap" class="listAnnee"></select>
-                </label>
-                <label>
-                    <p>Le fait étudié :</p>
-                    <select id="selectFaitMap" class="listFait"></select>
-                </label>  
+                <div id="graph2" class="container-fluid p-4 ">
+                    <h2>Evolution temporelle d'un fait dans un département</h2>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select id="selectGraph2Fait" class="listFait"></select>
+                        </label>
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select id="selectGraph2Dep" class="listDep"></select>
+                        </label>                 
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Question 3 -->
+            <div class="tab-pane fade" id="nav-q3" role="tabpanel" aria-labelledby="nav-q3-tab">
+
+                <div id="graph3">
+                    <h2>Evolutions temporels d'un fait divers dans les départements</h2>
+                    <p class="nomDep">&nbsp;</p>
+                    <div class="container-fluid p-4">
+                        <svg id="affichage"></svg>
+                        <svg id="depSelector"></svg>
+                        <div id="selecteurs" class="d-flex justify-content-around">
+                            <label >
+                                <p>Le fait étudié :</p>
+                                <select id="selectGraph3Fait" class="listFait"></select>
+                            </label>                    
+                        </div>
+                    </div>
+                </div>
+
+                <div id="graph4">
+                    <h2>Nombre des faits divers dans un départements pour une période</h2>
+                    <div class="container-fluid p-4">
+                        <svg></svg>
+                        <div id="selecteurs" class="d-flex justify-content-around">
+                            <label>
+                                <p>L'année étudié :</p>
+                                <select class="listAnnee"></select>
+                            </label>
+                            <label>
+                                <p>Le département étudié :</p>
+                                <select class="listDep"></select>
+                            </label>                 
+                        </div>
+                    </div>
+                </div>
+
+                <div id="map" class="container-fluid p-4 ">
+                    <h2>Visualisation géographique d'un fait divers en France</h2>
+                    <p class="nomDep">&nbsp;</p>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>L'année étudié :</p>
+                            <select id="selectAnneeMap" class="listAnnee"></select>
+                        </label>
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select id="selectFaitMap" class="listFait"></select>
+                        </label>  
+                    </div>
+                </div>
             </div>
         </div>
 
