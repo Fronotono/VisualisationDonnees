@@ -20,6 +20,18 @@ Promise.all(promises)
         const departements = getDepartements();
         const refinedData = refiningData();
 
+        console.log()
+        console.log()
+
+        let violsFaits = faits.filter(d => d.includes('Viols ')).concat(faits.filter(d => d.includes('sexuels')))
+        console.log(violsFaits)
+        let volsFaits = faits.filter(d => d.includes('Vols')).concat(faits.filter(d => d.includes('vols')))
+        console.log(volsFaits)
+        let destructionFaits = faits.filter(d => d.includes('destructions')).concat(faits.filter(d => d.includes('Attentats')))
+        console.log(destructionFaits)
+        let tempp = faits.filter( d => ! volsFaits.includes(d) && ! violsFaits.includes(d) && ! destructionFaits.includes(d))
+        console.log(tempp)
+
         d3.selectAll('svg').style('width',largeur).style('height',hauteur)
 
         /**
