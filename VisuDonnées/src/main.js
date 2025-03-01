@@ -8,7 +8,7 @@ import {annees, nomDepartement} from './data.js';
 
 var marge = {haut: 20, droite: 20, bas: 20, gauche: 60};
 var hauteur = 500;
-var largeur = 600;
+var largeur = 800;
 var duration = 500;
 
 const csvFiles = ['faits2002.csv', 'faits2003.csv', 'faits2004.csv', 'faits2005.csv', 'faits2006.csv', 'faits2007.csv', 'faits2008.csv', 'faits2009.csv', 'faits2010.csv'];
@@ -41,7 +41,7 @@ Promise.all(promises)
          */
 
         let listDep = d3.selectAll('.listDep').selectAll('option').data(departements).enter().append('option').attr('value', d => d).text(d => d + " - " + nomDepartement[d]) 
-        let listFait = d3.selectAll('.listFait').style('width','300px').selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d)
+        let listFait = d3.selectAll('.listFait')/*.style('width','300px')*/.selectAll('option').data(faits).enter().append('option').attr('value', d => d).text(d => d)
         let listAnnee = d3.selectAll('.listAnnee').selectAll('option').data(annees).enter().append('option').attr('value', d => d).text(d => d)
         
         var colors = [...d3.schemeCategory10, '#FFF']
