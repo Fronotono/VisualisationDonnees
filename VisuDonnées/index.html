@@ -21,20 +21,22 @@
 
         <div class="tab-content" id="nav-tabContent">
 
-            <!-- Acceuil -->
-            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <!-- Accueil -->
+            <div class="tab-pane fade" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
 
-                <div id="treemap" class="container p-4">
+                <div id="graphTreeMap" class="container p-4">
                     <h2>Nombre de crimes par année par département</h2>
                     <svg></svg>
-                    <label>
-                        <p>Choisisser l'année que vous voulez étudier :</p>
-                        <select id="selectAnneeMap"></select>
-                    </label>
-                    <label>
-                        <p>Choisissez le fait que vous voulez etudier :</p>
-                        <select id="selectFaitMap" class="listFait"></select>
-                    </label>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>            
+                        <label>
+                            <p>L'année étudiée :</p>
+                            <select class="listAnnee"></select>
+                        </label>                
+                    </div>
                 </div>
 
             </div>
