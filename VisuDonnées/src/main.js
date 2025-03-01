@@ -596,54 +596,56 @@ Promise.all(promises)
         }
 
         function creerTreeMap() {
-            let treemap = d3.select('#treemap');
-            let subject = getValue(selectTreeMap);
-            let max = getMaxFait(subject);
-        
-            let root = d3.hierarchy({ children: dataToHiearachier })  
-                .sum(d => d.nombre_de_crimes)
+            let graph = d3.select('#graphTreeMap');
+            
+            let annee = getValue(d3.select('.listAnnee'));
+            let fait = getValue(d3.select('.listFait'));
+            
+            let filteredData = {
+                name: annee,
+                children: departements.map(dep => ({
+                    name: dep,
+                    value: refinedData[annee][fait][dep] || 0
+                }))
+            };
+            
+            let root = d3.hierarchy(filteredData)
+                .sum(d => d.value)
                 .sort((a, b) => b.value - a.value);
-        
-            d3.treemap()
+            
+            let treemap = d3.treemap()
                 .size([largeur, hauteur])
-                .padding(2)(root);
-        
-            let colorScale = d3.scaleSequential(d3.interpolateOranges)
-                .domain([0, max]);
-        
-            let cell = treemap.select('svg').selectAll("g")
+                .padding(1);
+            
+            treemap(root);
+            
+            let color = d3.scaleOrdinal(d3.schemeCategory10);
+            
+            let svg = graph.select('svg');
+            svg.selectAll('*').remove();
+            
+            let nodes = svg
+                .selectAll('g')
                 .data(root.leaves())
-                .join("g")
-                .attr("transform", d => `translate(${d.x0},${d.y0})`);
-        
-            // Ajout des rectangles colorés
-            cell.append("rect")
-                .attr("width", d => d.x1 - d.x0)
-                .attr("height", d => d.y1 - d.y0)
-                .attr("fill", d => colorScale(d.value))
-                .style("stroke", "#333");
-        
-            // Ajout du texte (Numéro, Nom, Crimes)
-            cell.append("text")
-                .attr("x", d => (d.x1 - d.x0) / 2)
-                .attr("y", d => (d.y1 - d.y0) / 2 - 5)
-                .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle")
-                .attr("fill", "white")
-                .attr("font-size", "12px")
-                .text(d => `${d.data.numero} - ${d.data.département}`);
-        
-            // Nombre de crimes affiché en dessous
-            cell.append("text")
-                .attr("x", d => (d.x1 - d.x0) / 2)
-                .attr("y", d => (d.y1 - d.y0) / 2 + 10)
-                .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle")
-                .attr("fill", "white")
-                .attr("font-size", "10px")
-                .attr("fill-opacity", 0.8)
-                .text(d => `${d.value} crimes`);
-        }
+                .enter().append('g')
+                .attr('transform', d => `translate(${d.x0},${d.y0})`);
+            
+            nodes.append('rect')
+                .attr('width', d => d.x1 - d.x0)
+                .attr('height', d => d.y1 - d.y0)
+                .attr('fill', d => color(d.data.name));
+            
+            nodes.append('text')
+                .attr('x', 5)
+                .attr('y', 15)
+                .text(d => d.data.name)
+                .attr('fill', 'white')
+                .style('font-size', '12px')
+                .style('overflow', 'hidden');
+            
+            d3.select('.listAnnee').on('change', creerTreeMap);
+            d3.select('.listFait').on('change', creerTreeMap);
+        }        
 
         /*function creerTreeMap(){
             let treemap = d3.select('#treemap');
