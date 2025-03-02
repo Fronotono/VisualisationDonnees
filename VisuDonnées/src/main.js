@@ -21,6 +21,7 @@ Promise.all(promises)
         let uidCounter2 = 0;
         
         const faits = getFaits();
+        const regions = Object.keys(departementsParRegion)
         const departements = getDepartements();
         const refinedData = refiningData();
 
@@ -606,18 +607,19 @@ Promise.all(promises)
         }
 
         function creerTreeMap() {
+            model['treeMap']  = {}
+            model['treeMap']['palette'] = d3.schemePaired
+
+            regions.forEach(
+                function(d,i){
+                    model['treeMap'][d] = model['treeMap']['palette'][i % model['treeMap']['palette'].length]
+                    console.log(model['treeMap'][d])
+                }
+            )
+
             let graph = d3.select('#graphTreeMap');
-            
             let annee = getValue(d3.select('.listAnnee'));
             let fait = getValue(d3.select('.listFait'));
-            
-            /*let filteredData = {
-                name: annee,
-                children: departements.map(dep => ({
-                    name: dep,
-                    value: refinedData[annee][fait][dep] || 0
-                }))
-            };*/
 
             let filteredData = {
                 name: annee,
@@ -643,38 +645,38 @@ Promise.all(promises)
             treemap(root);
             
             let color = d3.scaleOrdinal(d3.schemePaired);
-            
             let svg = graph.select('svg');
-            svg.selectAll('*').remove();
             
             let nodes = svg
                 .selectAll('g')
                 .data(root.leaves())
-                .enter().append('g')
+
+            nodes.enter().append('g').merge(nodes)
+                .transition()
+                .duration(duration)
                 .attr('transform', d => `translate(${d.x0},${d.y0})`)
                 .each( function(d,i){
-                    d3.select(this)
-                        .append('rect')
+
+                    let temp = d3.select(this).selectAll('rect').data(d)
+                    temp.enter().append('rect').merge(temp)
                         .transition()
                         .duration(duration)
                         .attr('width', d => d.x1 - d.x0)
                         .attr('height', d => d.y1 - d.y0)
-                        //.attr('fill', d => color(d.data.name));
-                        .attr('fill', d => color(getRegionByDepartement(d.data.name)));
+                        .attr('fill', d => model['treeMap'][getRegionByDepartement(d.data.name)]);
 
-                    d3.select(this).append('text')
-                        //.attr('x', 5)
-                        //.attr('y', 15)
-                        .attr('x', d => (d.x1 - d.x0) / 2)
-                        .attr('y', d => (d.y1 - d.y0) / 2)
+                    let temp2 = d3.select(this).selectAll('text').data(d)
+                    temp2.enter().append('text').merge(temp2)
+                        .transition()
+                        .duration(duration)
+                        .attr('x', d => (d.x1 - d.x0 -5) / 2)
+                        .attr('y', d => (d.y1 - d.y0 +5) / 2)
                         .text(d => d.data.name)
                         .attr('fill', 'black')
                         .style('font-size', '12px')
                         .style('overflow', 'hidden');                        
                 })
                 
-
-            
             d3.select('.listAnnee').on('change', creerTreeMap);
             d3.select('.listFait').on('change', creerTreeMap);
 
@@ -688,7 +690,7 @@ Promise.all(promises)
             .each(function (d, i) {
                 d3.select(this)
                     .append('rect')
-                    .style('fill', color(d))
+                    .style('fill', model['treeMap'][d])
                     .attr('height', '20px')
                     .attr('width', '20px')
                     .attr('y', 5 + 22 * i + 'px')
