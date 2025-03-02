@@ -651,6 +651,8 @@ Promise.all(promises)
                 .selectAll('g')
                 .data(root.leaves())
 
+            nodes.selectAll('g').data(root.leaves()).exit().remove()
+
             nodes.enter().append('g').merge(nodes)
                 .transition()
                 .duration(duration)
@@ -664,17 +666,19 @@ Promise.all(promises)
                         .attr('width', d => d.x1 - d.x0)
                         .attr('height', d => d.y1 - d.y0)
                         .attr('fill', d => model['treeMap'][getRegionByDepartement(d.data.name)]);
-
-                    let temp2 = d3.select(this).selectAll('text').data(d)
-                    temp2.enter().append('text').merge(temp2)
-                        .transition()
-                        .duration(duration)
-                        .attr('x', d => (d.x1 - d.x0 -5) / 2)
-                        .attr('y', d => (d.y1 - d.y0 +5) / 2)
-                        .text(d => d.data.name)
-                        .attr('fill', 'black')
-                        .style('font-size', '12px')
-                        .style('overflow', 'hidden');                        
+                    if(d.data.value !== 0) {
+                        let temp2 = d3.select(this).selectAll('text').data(d)
+                        temp2.enter().append('text').merge(temp2)
+                            .transition()
+                            .duration(duration)
+                            .attr('x', d => (d.x1 - d.x0 -5) / 2)
+                            .attr('y', d => (d.y1 - d.y0 +5) / 2)
+                            .text(d => d.data.name)
+                            .attr('fill', 'black')
+                            .style('font-size', '12px')
+                            .style('overflow', 'hidden');                        
+                    }
+                        
                 })
                 
             d3.select('.listAnnee').on('change', creerTreeMap);
