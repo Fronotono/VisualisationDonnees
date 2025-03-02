@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importer les styles
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Importer les scripts (y compris Popper.js)
-import {annees, nomDepartement} from './data.js'; 
+import {annees, nomDepartement, departementsParRegion} from './data.js'; 
 //import React, { useEffect, useRef } from "react";
 
 
@@ -47,13 +47,14 @@ Promise.all(promises)
         var colors = [...d3.schemeCategory10, '#FFF']
         var model = {}
 
+        creerTreeMap();
         creerGraph11();
         creerGraph1();
         creerGraph2();
         creerGraph3();
         creerGraph4();
         creerGraphMap();
-        creerTreeMap();
+
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}
         function fromCodeJSONtoCodeData(d){return d.properties['code'].replace(/^0+/, '')}
@@ -143,6 +144,15 @@ Promise.all(promises)
                 res += getTotalFait(annee,fait)
             )
             return res;
+        }
+
+        function getRegionByDepartement(departement) {
+            for (const [region, departements] of Object.entries(departementsParRegion)) {
+                if (departements.includes(departement)) {
+                    return region;
+                }
+            }
+            return "Département inconnu";
         }
 
         function creerGraph11(){
@@ -601,11 +611,24 @@ Promise.all(promises)
             let annee = getValue(d3.select('.listAnnee'));
             let fait = getValue(d3.select('.listFait'));
             
-            let filteredData = {
+            /*let filteredData = {
                 name: annee,
                 children: departements.map(dep => ({
                     name: dep,
                     value: refinedData[annee][fait][dep] || 0
+                }))
+            };*/
+
+            let filteredData = {
+                name: annee,
+                children: Object.keys(departementsParRegion).map(reg => ({
+                    name: reg,
+                    children: departements
+                        .filter(dep => getRegionByDepartement(dep) === reg)
+                        .map(dep => ({
+                            name: dep,
+                            value: refinedData[annee][fait][dep] || 0
+                        }))
                 }))
             };
             
@@ -619,7 +642,7 @@ Promise.all(promises)
             
             treemap(root);
             
-            let color = d3.scaleOrdinal(d3.schemeCategory10);
+            let color = d3.scaleOrdinal(d3.schemePaired);
             
             let svg = graph.select('svg');
             svg.selectAll('*').remove();
@@ -628,23 +651,59 @@ Promise.all(promises)
                 .selectAll('g')
                 .data(root.leaves())
                 .enter().append('g')
-                .attr('transform', d => `translate(${d.x0},${d.y0})`);
-            
-            nodes.append('rect')
-                .attr('width', d => d.x1 - d.x0)
-                .attr('height', d => d.y1 - d.y0)
-                .attr('fill', d => color(d.data.name));
-            
-            nodes.append('text')
-                .attr('x', 5)
-                .attr('y', 15)
-                .text(d => d.data.name)
-                .attr('fill', 'white')
-                .style('font-size', '12px')
-                .style('overflow', 'hidden');
+                .attr('transform', d => `translate(${d.x0},${d.y0})`)
+                .each( function(d,i){
+                    d3.select(this)
+                        .append('rect')
+                        .transition()
+                        .duration(duration)
+                        .attr('width', d => d.x1 - d.x0)
+                        .attr('height', d => d.y1 - d.y0)
+                        //.attr('fill', d => color(d.data.name));
+                        .attr('fill', d => color(getRegionByDepartement(d.data.name)));
+
+                    d3.select(this).append('text')
+                        //.attr('x', 5)
+                        //.attr('y', 15)
+                        .attr('x', d => (d.x1 - d.x0) / 2)
+                        .attr('y', d => (d.y1 - d.y0) / 2)
+                        .text(d => d.data.name)
+                        .attr('fill', 'black')
+                        .style('font-size', '12px')
+                        .style('overflow', 'hidden');                        
+                })
+                
+
             
             d3.select('.listAnnee').on('change', creerTreeMap);
             d3.select('.listFait').on('change', creerTreeMap);
+
+            //Création de la legend dans un svg voisin
+            graph.select('.legend')
+            .style('width', '300px')
+            .selectAll()
+            .data(Object.keys(departementsParRegion))
+            .enter()
+            .append('g') // Crée un groupe pour chaque élément (rect + text)
+            .each(function (d, i) {
+                d3.select(this)
+                    .append('rect')
+                    .style('fill', color(d))
+                    .attr('height', '20px')
+                    .attr('width', '20px')
+                    .attr('y', 5 + 22 * i + 'px')
+                    .attr('x', '0px')
+        
+                d3.select(this)
+                    .append('text')
+                    .text(d)
+                    .attr('x', '25px') // Décalage à droite du rectangle
+                    .attr('y', 15 + 22 * i + 'px') // Alignement vertical avec le rectangle
+                    .attr('alignment-baseline', 'middle')
+                    .style('font-size', '14px')
+                    .style('fill', '#000');
+            });
+        
         }        
 
         /*function creerTreeMap(){
