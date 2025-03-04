@@ -1,15 +1,17 @@
+body {
+  position: relative;
+}
+
 .tooltip {
   position: absolute;
-  background: rgba(0, 0, 0, 0.8);
+  background-color: rgb(0, 0, 0);
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: none; /* Empêche d'interférer avec la souris */
   color: white;
-  padding: 8px;
-  border-radius: 4px;
-  display: none;
-  pointer-events: none;
-  font-size: 14px;
-  height: 200px;
-  width: 200px;
-  z-index: 999;
+  opacity: 0;
 }
 
 /*.line {

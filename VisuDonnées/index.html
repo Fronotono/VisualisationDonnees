@@ -10,6 +10,8 @@
 
         <h1>Etude graphique des faits en France</h1>
 
+        <div class="tooltip"></div>
+
         <nav>
             <div class="nav nav-tabs px-4 nav-justified" id="nav-tab" role="tablist">
                 <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Accueil</button>
@@ -92,7 +94,6 @@
 
                 <div id="graph3">
                     <h2>Evolutions temporels d'un fait divers dans les départements</h2>
-                    <p class="nomDep">&nbsp;</p>
                     <div class="container p-4">
                         <svg id="affichage"></svg>
                         <svg id="depSelector"></svg>
@@ -124,7 +125,6 @@
 
                 <div id="map" class="container p-4 ">
                     <h2>Visualisation géographique d'un fait divers en France</h2>
-                    <p class="nomDep">&nbsp;</p>
                     <svg></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>

@@ -17,8 +17,6 @@ const promises = csvFiles.map(file => d3.dsv(";",file));
 Promise.all(promises)
     .then(function(datas) {
         let mapPromise = d3.json("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson")
-        let uidCounter = 0;
-        let uidCounter2 = 0;
         
         const faits = getFaits();
         const regions = Object.keys(departementsParRegion)
@@ -36,6 +34,9 @@ Promise.all(promises)
 
         d3.selectAll('svg').style('width',largeur).style('height',hauteur)
         const dataToHiearachier = dataToHiearachie();
+
+        // Création du tooltip
+        const tooltip = d3.select(".tooltip");
 
         /**
          * Remplissage des selects 
@@ -178,6 +179,19 @@ Promise.all(promises)
                 .attr('y', d => yScale(getTotal(d)))
                 .style("fill", "blue")
                 .classed('total',true)
+
+            graph.select('svg').selectAll('rect')
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", "100")
+                        .html(getTotal(d) +' faits');
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", "0")
+                });
 
             axeX.call(xAxis);
             axeY.call(yAxis);
@@ -342,11 +356,16 @@ Promise.all(promises)
                 
 
             graph.selectAll('.line')
-                .on('mouseenter', function(d,i){
-                    nomDep.text( i + ' - ' +nomDepartement[i])
+                .on("mouseenter", (event, d) => {
+                    tooltip.style("opacity", "100")
+                        .text( d + ' - ' +nomDepartement[d]);
                 })
-                .on('mouseleave', function(d,i){
-                    nomDep.html('&nbsp;');
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    tooltip.style("opacity", "0")
                 })
                 .on('click', function(d,i){
                     model[3].col[i] = model[3]['selectCouleur']
@@ -363,22 +382,43 @@ Promise.all(promises)
                     .translate([200, 200]);
                 let path = d3.geoPath().projection(projection);
 
-                graph.select('#depSelector').style('width','400px').style('height','400px').selectAll('path').data(france.features).enter().append('path')
+                graph.select('#depSelector').style('width','400px').style('height','400px').append('g').classed('map',true).selectAll('path').data(france.features).enter().append('path')
                     .attr('d', path)
                     .classed('departement',true)
                     .style('fill', (d) => model[3].col[fromCodeJSONtoCodeData(d)])
                     .style("stroke", "#333")
+                    .on("mouseenter", (event, d) => {
+                        tooltip.style("opacity", "100")
+                            .text( fromCodeJSONtoCodeData(d) + ' - ' +nomDepartement[fromCodeJSONtoCodeData(d)]);
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("top", (event.pageY + 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseleave", () => {
+                        tooltip.style("opacity", "0")
+                    })
 
-                graph.select('#depSelector').selectAll('path')
+                function zoomed(ev){
+                    graph.select('.map').attr('transform',ev.transform )
+                }
+                
+                graph.select('.map').selectAll('path')
                     .on('click', function(d,i){
                         model[3].col[fromCodeJSONtoCodeData(i)] = model[3]['selectCouleur'];
                         d3.select(this)
                             .style('fill', (d) => model[3].col[fromCodeJSONtoCodeData(d)])
                         updateGraph()
                     })
+                graph.select('.map').call(d3.zoom().scaleExtent([1,100]).translateExtent([[0, 0], [400, 400]]).on('zoom', (eve) => zoomed(eve)).filter((eve) => {
+                    if (event.type === "wheel") {
+                        event.preventDefault(); // Bloque le scroll de la page
+                    }
+                    return !event.ctrlKey || event.type === "wheel";
+                }))
 
                 model[3]['selectCouleur'] = colors[0];
-                graph.select('#depSelector').selectAll().data(colors).enter().append('rect')
+                graph.select('#depSelector').append('g').classed('legend',true).selectAll().data(colors).enter().append('rect')
                     .style('fill',d => d).style('stroke', function(d){return d===model[3]['selectCouleur']?'red':'#333'}).style('stroke-width','2px')
                     .attr('height','20px').attr('width','20px').attr('x', (d,i) => 5 + 22 * i +'px').attr('y','360px')
                     .classed('colorPickerItem',true)
@@ -488,7 +528,6 @@ Promise.all(promises)
             let fait = getValue(graph.select('.listFait'))
 
             let max = d3.max(Object.values(refinedData[annee][fait]))
-            let nomDep = graph.select('.nomDep')
 
             graph.select('.listAnnee').on('change',function(){updateGraph()})
             graph.select('.listFait').on('change',function(){updateGraph()})
@@ -504,7 +543,7 @@ Promise.all(promises)
             let path = d3.geoPath().projection(projection);
                 
             mapPromise.then(france => {
-                    graph.select('svg').selectAll('path').data(france.features).enter().append('path')
+                    graph.select('svg').append('g').classed('map',true).selectAll().data(france.features).enter().append('path')
                         .attr('d', path)
                         .classed('departement',true)
                         .style('fill', d => {
@@ -513,16 +552,31 @@ Promise.all(promises)
                         .style("stroke", "#333")
 
                     graph.selectAll('.departement')
-                        .on('mouseenter', function(d,i){
+                        .on("mouseenter", (event, d) => {
                             d3.select(this).style('fill','blue')
-                            nomDep.text(i.properties['nom']+" "+ refinedData[annee][fait][fromCodeJSONtoCodeData(i)])
+                            tooltip.style("opacity", "100")
+                                .html(fromCodeJSONtoCodeData(d) + ' - ' +nomDepartement[fromCodeJSONtoCodeData(d)]+"<br>"+ refinedData[annee][fait][fromCodeJSONtoCodeData(d)] + ' fait(s)');
                         })
-                        .on('mouseleave', function(d,i){
+                        .on("mousemove", (event) => {
+                            tooltip.style("top", (event.pageY + 10) + "px")
+                                .style("left", (event.pageX + 10) + "px");
+                        })
+                        .on("mouseleave", () => {
                             d3.select(this).style('fill', d => {
                                 return echelleLineaireMulti(refinedData[annee][fait][fromCodeJSONtoCodeData(d)]);
                             })
-                            nomDep.html('&nbsp;');
+                            tooltip.style("opacity", "0")
                         })
+
+                    function zoomed(ev){
+                        graph.select('.map').attr('transform',ev.transform )
+                    }
+                    graph.select('.map').call(d3.zoom().scaleExtent([1,100]).translateExtent([[0, 0], [largeur, hauteur]]).on('zoom', (eve) => zoomed(eve)).filter((eve) => {
+                        if (event.type === "wheel") {
+                            event.preventDefault(); // Bloque le scroll de la page
+                        }
+                        return !event.ctrlKey || event.type === "wheel";
+                    }))
 
                     // Définition du dégradé
                     let defs = graph.select('svg').append("defs");
@@ -541,6 +595,14 @@ Promise.all(promises)
                     
                     let margeLegend = {'bas':10,'haut':10,'gauche':10}
                     let largeurLegend = 10
+
+                    //Rectangle sous la legend pour ne pas avoir la carte dessous lors du zoom 
+                    graph.select('svg').append('rect')
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .attr("width", 70)
+                        .attr("height", hauteur)
+                        .style("fill", "white");
 
                     graph.select('svg').append("rect")
                         .attr("x", margeLegend.gauche)
@@ -567,7 +629,6 @@ Promise.all(promises)
                 let annee = getValue(graph.select('.listAnnee'))
                 let fait = getValue(graph.select('.listFait'))
                 let max = d3.max(Object.values(refinedData[annee][fait]))
-                let nomDep = graph.select('.nomDep')
 
                 let margeLegend = {'bas':0,'haut':20,'gauche':80}
                 let largeurLegend = 10
@@ -584,16 +645,21 @@ Promise.all(promises)
                     })
                 
                 graph.selectAll('.departement')
-                    .on('mouseenter', function(d,i){
-                        d3.select(this).style('fill','blue')
-                        nomDep.text(i.properties['nom']+" "+ refinedData[annee][fait][i.properties['code'].replace(/^0+/, '')])
+                .on("mouseenter", (event, d) => {
+                    d3.select(this).style('fill','blue')
+                    tooltip.style("opacity", "100")
+                        .html(fromCodeJSONtoCodeData(d) + ' - ' +nomDepartement[fromCodeJSONtoCodeData(d)]+"<br>"+ refinedData[annee][fait][fromCodeJSONtoCodeData(d)] + ' fait(s)');
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    d3.select(this).style('fill', d => {
+                        return echelleLineaireMulti(refinedData[annee][fait][fromCodeJSONtoCodeData(d)]);
                     })
-                    .on('mouseleave', function(d,i){
-                        d3.select(this).style('fill', d => {
-                            return echelleLineaireMulti(refinedData[annee][fait][d.properties['code'].replace(/^0+/, '')]);
-                        })
-                        nomDep.html('&nbsp;');
-                    })
+                    tooltip.style("opacity", "0")
+                })
 
                 // Échelle linéaire pour l'axe
                 let scale = d3.scaleLinear()
