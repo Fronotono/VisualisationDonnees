@@ -53,6 +53,7 @@ Promise.all(promises)
         creerGraph11();
         creerGraph1();
         creerGraph2();
+        creerGraph5();
         creerGraph3();
         creerGraph4();
         creerGraphMap();
@@ -775,86 +776,66 @@ Promise.all(promises)
                     .style('font-size', '14px')
                     .style('fill', '#000');
             });
-        
         }        
 
-        /*function creerTreeMap(){
-            let treemap = d3.select('#treemap');
-            // Specify the chart’s dimensions.
-            const width = 1154;
-            const height = 1154;
+        function creerGraph5() {
+            let graph = d3.select("#graph5");
+            let axeX = graph.select("svg").append("g").classed("axeX", true);
+            let axeY = graph.select("svg").append("g").classed("axeY", true);
+            let fait = getValue(graph.select(".listFait"));
+            let dep = getValue(graph.select(".listDep"));
+        
+            graph.select(".listFait").on("change", function () { updateGraph(); });
+            graph.select(".listDep").on("change", function () { updateGraph(); });
+        
+            let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
+            let xScale = d3.scaleBand().domain(annees.slice(1)).range([marge.gauche, largeur]);
+            let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
+        
+            let xAxis = g => g
+                .call(d3.axisBottom(xScale).tickSizeOuter(0))
+                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
 
-            // Specify the color scale.
-            const color = d3.scaleOrdinal(dataToHiearachier.children.map(d => d.name), d3.schemeTableau10);
+            let yAxis = g => g
+                .call(d3.axisLeft(yScale))
+                .attr("transform", `translate(${marge.gauche},0)`);
+        
+            graph.select("svg").selectAll("rect").data(annees).enter().append("rect")
+                .attr("x", d => xScale(d))
+                .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
+                .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
+                .attr("width", xScale.bandwidth() - 5)
+                .style("fill", d => getDifference(d, fait, dep) >= 0 ? "blue" : "red");
+        
+            axeX.call(xAxis);
+            axeY.call(yAxis);
+        
+            function updateGraph() {
+                let graph = d3.select("#graph5");
+                let fait = getValue(graph.select(".listFait"));
+                let dep = getValue(graph.select(".listDep"));
+                let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
+                let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
 
-            const tile = d3.treemapSquarify; // Méthode standard de D3.js
-
-            // Compute the layout.
-            const root = d3.treemap()
-                .tile(tile) // e.g., d3.treemapSquarify
-                .size([width, height])
-                .padding(1)
-                .round(true)
-            (d3.hierarchy(dataToHiearachier)
-                .sum(d => d.value)
-                .sort((a, b) => b.value - a.value));
-
-            // Create the SVG container.
-            const svg = treemap.select('svg');
-
-            // Add a cell for each leaf of the hierarchy.
-            const leaf = svg.selectAll("g")
-                .data(root.leaves())
-                .join("g")
-                .attr("transform", d => `translate(${d.x0},${d.y0})`);
-
-            // Append a tooltip.
-            const format = d3.format(",d");
-            leaf.append("title")
-                .text(d => `${d.ancestors().reverse().map(d => d.data.name).join(".")}\n${format(d.value)}`);
-
-
-                leaf.append("rect")
-                    .attr("id", function(d) {
-                        // Générez un ID unique en utilisant le compteur
-                        return "leaf-" + (uidCounter++);
-                    })
-                    .attr("fill", function(d) {
-                        while (d.depth > 1) d = d.parent;
-                        return color(d.data.name);
-                    })
-                    .attr("fill-opacity", 0.6)
-                    .attr("width", function(d) {
-                        return d.x1 - d.x0;
-                    })
-                    .attr("height", function(d) {
-                        return d.y1 - d.y0;
-                    });
-                               
-
-            // Append a clipPath to ensure text does not overflow.
-            leaf.append("clipPath")
-                .attr("id", function(d) {
-                    // Générer un ID unique en utilisant le compteur uidCounter2
-                    return "clip-" + (uidCounter2++);
-                })
-                .append("use")
-                .attr("xlink:href", function(d) {
-                    return "#" + d.leafUid;  // Utiliser l'ID unique du rect créé précédemment
-                });
-
-
-            // Append multiline text. The last line shows the value and has a specific formatting.
-            leaf.append("text")
-                .attr("clip-path", d => d.clipUid)
-                .selectAll("tspan")
-                .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g).concat(format(d.value)))
-                .join("tspan")
-                .attr("x", 3)
-                .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
-                .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
-                .text(d => d);
-            }*/
+                let yAxis = g => g
+                    .call(d3.axisLeft(yScale))
+                    .attr("transform", `translate(${marge.gauche},0)`);
+        
+                graph.selectAll("rect").data(annees)
+                    .transition()
+                    .duration(500)
+                    .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
+                    .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
+                    .style("fill", d => getDifference(d, fait, dep) >= 0 ? "blue" : "red");
+        
+                graph.select(".axeY").transition().duration(500).call(yAxis);
+            }
+        }
+        
+        function getDifference(annee, fait, dep) {
+            if (!refinedData[annee] || !refinedData[annee - 1]) return 0;
+            return (refinedData[annee][fait][dep] || 0) - (refinedData[annee - 1][fait][dep] || 0);
+        }        
     }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);
 });
