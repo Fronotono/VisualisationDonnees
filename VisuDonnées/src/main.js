@@ -52,6 +52,7 @@ Promise.all(promises)
         creerTreeMap();
         creerGraph11();
         creerGraph1();
+        creerBoxPlot()
         creerGraph2();
         creerGraph5();
         creerGraph3();
@@ -149,7 +150,7 @@ Promise.all(promises)
             return res;
         }
 
-        function getRegionByDepartement(departement) {
+        function getRegionByDepartement(departement) { 
             for (const [region, departements] of Object.entries(departementsParRegion)) {
                 if (departements.includes(departement)) {
                     return region;
@@ -852,7 +853,127 @@ Promise.all(promises)
         function getDifference(annee, fait, dep) {
             if (!refinedData[annee] || !refinedData[annee - 1]) return 0;
             return (refinedData[annee][fait][dep] || 0) - (refinedData[annee - 1][fait][dep] || 0);
-        }        
-    }).catch(function(error) {
+        }
+        
+        function creerBoxPlot() {
+            let graph = d3.select("#boxplot");
+            let svg = graph.select("svg");
+
+            // Vérifie si le svg existe, sinon l'ajoute
+            if (svg.empty()) {
+                svg = graph.append("svg")
+                    .attr("width", largeur)
+                    .attr("height", hauteur);
+            } else {
+                svg.selectAll("*").remove(); // Nettoyage avant redraw
+            }
+            
+            let axeX = svg.append("g").classed("axeX", true);
+            let axeY = svg.append("g").classed("axeY", true);
+            
+            graph.select(".listFait").on("change", updateGraph);
+            graph.select(".listDep").on("change", updateGraph);
+            
+            function updateGraph() {
+                let fait = getValue(graph.select(".listFait"));
+            
+                // Récupération des données pour toutes les années
+                let boxData = annees.map(annee => {
+                    let data = Object.values(refinedData[annee][fait]);
+                    if (!data || data.length === 0) return null;
+        
+                    data.sort(d3.ascending);
+        
+                    return {
+                        annee,
+                        min: d3.min(data),
+                        q1: d3.quantile(data, 0.25),
+                        median: d3.quantile(data, 0.5),
+                        q3: d3.quantile(data, 0.75),
+                        max: d3.max(data)
+                    };
+                }).filter(d => d !== null); // Supprime les années sans données
+        
+                if (boxData.length === 0) {
+                    console.error("Aucune donnée disponible.");
+                    return;
+                }
+        
+                console.log("Box plot data:", boxData);
+        
+                let xScale = d3.scaleBand()
+                    .domain(boxData.map(d => d.annee))
+                    .range([marge.gauche, largeur - marge.droite])
+                    .padding(0.2);
+        
+                let maxVal = d3.max(boxData, d => d.max);
+                let yScale = d3.scaleLinear()
+                    .domain([0, maxVal + 10])
+                    .range([hauteur - marge.bas, marge.haut]);
+        
+                let xAxis = g => g
+                    .attr("transform", `translate(0, ${hauteur - marge.bas})`)
+                    .call(d3.axisBottom(xScale));
+        
+                let yAxis = g => g
+                    .attr("transform", `translate(${marge.gauche},0)`)
+                    .call(d3.axisLeft(yScale));
+        
+                // Boîtes (Q1 -> Q3)
+                svg.selectAll(".box").data(boxData).join("rect")
+                    .classed("box", true)
+                    .transition().duration(500)
+                    .attr("x", d => xScale(d.annee))
+                    .attr("y", d => yScale(d.q3))
+                    .attr("width", xScale.bandwidth() - 5)
+                    .attr("height", d => yScale(d.q1) - yScale(d.q3))
+                    .style("fill", "steelblue")
+                    .style("opacity", 0.7)
+                    .style("stroke", "black")
+                    .style("stroke-width", 1.5);
+        
+                // Médianes
+                svg.selectAll(".median").data(boxData).join("line")
+                    .classed("median", true)
+                    .transition().duration(500)
+                    .attr("x1", d => xScale(d.annee))
+                    .attr("x2", d => xScale(d.annee) + (xScale.bandwidth() - 5))
+                    .attr("y1", d => yScale(d.median))
+                    .attr("y2", d => yScale(d.median))
+                    .style("stroke", "red")
+                    .style("stroke-width", 2);
+        
+                // Whiskers (min/max)
+                svg.selectAll(".whisker").data(boxData.flatMap(d => [d.min, d.max])).join("line")
+                    .classed("whisker", true)
+                    .transition().duration(500)
+                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
+                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
+                    .attr("y1", d => yScale(d))
+                    .attr("y2", (d, i) => yScale(i % 2 === 0 ? boxData[Math.floor(i / 2)].q1 : boxData[Math.floor(i / 2)].q3))
+                    .style("stroke", "black")
+                    .style("stroke-width", 2);
+        
+                // Caps des whiskers
+                svg.selectAll(".whisker-cap").data(boxData.flatMap(d => [d.min, d.max])).join("line")
+                    .classed("whisker-cap", true)
+                    .transition().duration(500)
+                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 4)
+                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + 3 * xScale.bandwidth() / 4)
+                    .attr("y1", d => yScale(d))
+                    .attr("y2", d => yScale(d))
+                    .style("stroke", "black")
+                    .style("stroke-width", 2);
+        
+                // Mise à jour des axes
+                axeX.transition().duration(500).call(xAxis);
+                axeY.transition().duration(500).call(yAxis);
+            }
+        
+            // Initialisation
+            updateGraph();
+        }    
+            
+        }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);
 });

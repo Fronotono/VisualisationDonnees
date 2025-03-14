@@ -7,7 +7,7 @@
         <link rel="styleSheet" href="src/style.css" />
     </head>
     <body>
-        <svg style="display:hidden">
+        <!--<svg style="display:hidden">
             <defs>
                 <pattern id="pattern-one" viewBox="0, 0, 11, 11" width="15%" height="15%" fill="red">
                     <circle cx="5" cy="5" r="5" fill="green" />
@@ -19,7 +19,7 @@
                 </g>
                 </pattern>
             </defs>
-        </svg>
+        </svg>-->
         <h1>Etude graphique des faits en France</h1>
 
         <div class="tooltip"></div>
@@ -81,6 +81,17 @@
                             <p>Le département étudié :</p>
                             <select class="listDep"></select>
                         </label>                
+                    </div>
+                </div>
+
+                <div id="boxplot" class="container p-4">
+                    <h2>Moyenne, Médiane et Quartiles d'un fait en France</h2>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>              
                     </div>
                 </div>
 
