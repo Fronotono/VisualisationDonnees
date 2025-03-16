@@ -599,8 +599,13 @@ Promise.all(promises)
         function creerGraphRepartitionFaits() {
             let graph = d3.select('#graphRepartitionFaits')
 
-            let axeX = graph.select('svg').append('g').classed('axeX', true)
-            let axeY = graph.select('svg').append('g').classed('axeY', true)
+            let svg = graph.select('svg')
+                .attr("width", largeur + marge.gauche + marge.droite)
+                .attr("height", hauteur + 300) // Augmente la hauteur totale
+                .attr("viewBox", `0 0 ${largeur + marge.gauche + marge.droite} ${hauteur + 300}`);
+
+            let axeX = svg.append('g').classed('axeX', true)
+            let axeY = svg.append('g').classed('axeY', true)
 
             let annee = getValue(graph.select('.listAnnee'))
             let dep = getValue(graph.select('.listDep'))
@@ -609,11 +614,18 @@ Promise.all(promises)
             graph.select('.listDep').on('change',function(){updateGraph()})
 
             let max = d3.max(faits, d => refinedData[annee][d][dep])
-            let xScale = d3.scaleBand().domain(faits).range([marge.gauche, largeur]);
+            let xScale = d3.scaleBand()
+                .domain(faits)
+                .range([marge.gauche, largeur])
             let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
             let xAxis = g => g
                 .attr("transform", `translate(0, ${hauteur - marge.bas})`)
-                .call(d3.axisBottom(xScale).tickSizeOuter(0));
+                .call(d3.axisBottom(xScale).tickSizeOuter(0))
+                .selectAll("text")
+                .attr("transform", "rotate(45)")
+                .style("text-anchor", "start")
+                .attr("dx", "0.5em")
+                .attr("dy", "1em");
             let yAxis = g => g
                 .attr("transform", `translate(${marge.gauche},0)`)
                 .call(d3.axisLeft(yScale))
