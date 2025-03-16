@@ -14,6 +14,28 @@ body {
   opacity: 0;
 }
 
+.line {
+  width: 100%;
+  margin: 10px 0 10px 0;
+  border-top: 2px solid rgb(31, 119, 180);
+}
+
+.font-h2 {
+  color: rgb(31, 119, 180);
+  margin: 10px 0 10px 0;
+}
+
+#selecteurs label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Aligne à gauche */
+}
+
+#selecteurs p {
+  margin-bottom: 5px; /* Ajoute un peu d'espace entre le texte et le sélecteur */
+  font-weight: bold; /* Met le texte en gras pour plus de lisibilité */
+}
+
 /*.line {
   stroke : steelblue;
   fill : none;
