@@ -49,14 +49,14 @@ Promise.all(promises)
         var colors = [...d3.schemeCategory10, '#FFF']
         var model = {}
 
-        creerGraphEvolutionCrimes();
-        creerGraphComparaisonCriminalite();
+        creerGraphEvolutionFaits();
+        creerGraphComparaisonFaits();
         creerGraphEvolutionDep();
         creerGraphEvolutionCarteCourbes();
         creerBoxPlot();
         creerGraphRepartitionFaits();
         creerGraphDiffAnnee()
-        creerCarteCriminalite();
+        creerCarteFaits();
         creerTreeMap();
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}
@@ -158,8 +158,8 @@ Promise.all(promises)
             return "Département inconnu";
         }
 
-        function creerGraphEvolutionCrimes() {
-            let graph = d3.select('#graphEvolCrimes');
+        function creerGraphEvolutionFaits() {
+            let graph = d3.select('#graphEvolFaits');
             let svg = graph.select("svg");
         
             let axeX = svg.append('g').classed('axeX', true);
@@ -182,7 +182,7 @@ Promise.all(promises)
                 .attr('width', xScale.bandwidth() - 1)
                 .attr('x', d => xScale(d))
                 .attr('y', d => yScale(getTotal(d)))
-                .style("fill", "rgb(31, 119, 180)") // Attribution des couleurs par année
+                .style("fill", "rgb(31, 119, 180)")
                 .classed('total', true);
         
             svg.selectAll('rect')
@@ -202,8 +202,8 @@ Promise.all(promises)
             axeY.call(yAxis);
         }        
 
-        function creerGraphComparaisonCriminalite() {
-            let graph = d3.select('#graphComparaisonCrimes')
+        function creerGraphComparaisonFaits() {
+            let graph = d3.select('#graphComparaisonFaits')
             let axeX = graph.select('svg').append('g').classed('axeX', true)
             let axeY = graph.select('svg').append('g').classed('axeY', true)
             let fait = getValue(graph.select('.listFait'))
@@ -245,12 +245,11 @@ Promise.all(promises)
             axeY.call(yAxis);
 
             function updateGraph(){
-                console.log('update graph1')
-                let graph = d3.select("#graph1")
+                let graph = d3.select("#graphComparaisonFaits")
                 let fait = getValue(graph.select('.listFait'))
                 let dep = getValue(graph.select('.listDep'))
                 let max = d3.max(annees, d => getTotalFait(d,fait))
-                let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
+                let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut])
                 
                 let yAxis = g => g
                     .attr("transform", `translate(${marge.gauche},0)`)
@@ -270,7 +269,7 @@ Promise.all(promises)
                 
                 graph.select('.axeY').transition().duration(500).call(yAxis)
             }
-        }
+        }   
 
         function creerGraphEvolutionDep() {
             let graph = d3.select('#graphEvolDep');
@@ -323,7 +322,7 @@ Promise.all(promises)
                     .duration(500)
                     .attr('y', d => yScale(refinedData[d][fait][dep]))
                     .attr('height', d => yScale(0) - yScale(refinedData[d][fait][dep]))
-                    .style('fill', d => colorScale(d)); // Mise à jour des couleurs
+                    .style('fill', 'rgb(31, 119, 180)');
         
                 svg.select('.axeY').transition().duration(500).call(yAxis);
             }
@@ -440,12 +439,12 @@ Promise.all(promises)
             })
 
             function updateColorPicker(){
-                d3.select('#graph3').select('#depSelector').selectAll('.colorPickerItem')
+                d3.select('#graphEvolCarteCourbes').select('#depSelector').selectAll('.colorPickerItem')
                     .style('stroke', function(d){return d===model[3]['selectCouleur']?'red':'#333'})
             }
 
             function updateGraph(){
-                let graph = d3.select('#graph3')
+                let graph = d3.select('#graphEvolCarteCourbes')
                 let fait = getValue(graph.select('.listFait'))
                 let max = getMaxFait(fait)
 
@@ -472,7 +471,7 @@ Promise.all(promises)
                     })
                     .attr('d', d => line(getEvolFait(fait,d)))
 
-                    d3.select('#graph3').select('#depSelector').selectAll('.departement')
+                    d3.select('#graphEvolCarteCourbes').select('#depSelector').selectAll('.departement')
                     .style('fill', (d,i)=>model[3].col[fromCodeJSONtoCodeData(d)])
 
                 graph.select('.axeY').transition().duration(duration).call(yAxis)
@@ -630,7 +629,7 @@ Promise.all(promises)
             axeY.call(yAxis);
 
             function updateGraph(){
-                let graph = d3.select("#graph4")
+                let graph = d3.select("#graphRepartitionFaits")
                 let annee = getValue(graph.select('.listAnnee'))
                 let dep = getValue(graph.select('.listDep'))
                 let max = d3.max(faits, d => refinedData[annee][d][dep])
@@ -677,7 +676,7 @@ Promise.all(promises)
                 .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
                 .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
                 .attr("width", xScale.bandwidth() - 5)
-                .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(31, 119, 180)" : "rgb(214, 39, 40)");
+                .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(214, 39, 40)" : "rgb(44, 160, 44)");
         
             axeX.call(xAxis);
             axeY.call(yAxis);
@@ -698,7 +697,7 @@ Promise.all(promises)
                     .duration(500)
                     .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
                     .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
-                    .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(31, 119, 180)" : "rgb(214, 39, 40)");
+                    .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(214, 39, 40)" : "rgb(44, 160, 44)");
         
                 graph.select(".axeY").transition().duration(500).call(yAxis);
             }
@@ -709,8 +708,8 @@ Promise.all(promises)
             return (refinedData[annee][fait][dep] || 0) - (refinedData[annee - 1][fait][dep] || 0);
         }
 
-        function creerCarteCriminalite() {
-            let graph = d3.select('#carteCrimes')
+        function creerCarteFaits() {
+            let graph = d3.select('#carteFaits')
 
             let annee = getValue(graph.select('.listAnnee'))
             let fait = getValue(graph.select('.listFait'))
@@ -813,7 +812,7 @@ Promise.all(promises)
                 .catch(error => console.log("Erreur de chargement :", error));  
         
             function updateGraph(){
-                let graph = d3.select('#map')
+                let graph = d3.select('#carteFaits')
                 let annee = getValue(graph.select('.listAnnee'))
                 let fait = getValue(graph.select('.listFait'))
                 let max = d3.max(Object.values(refinedData[annee][fait]))
@@ -949,8 +948,8 @@ Promise.all(promises)
             nodes.selectAll('rect')
                 
                 
-            d3.select('.listAnnee').on('change', creerTreeMap);
-            d3.select('.listFait').on('change', creerTreeMap);
+            graph.select('.listAnnee').on('change', creerTreeMap);
+            graph.select('.listFait').on('change', creerTreeMap);
 
             //Création de la legend dans un svg voisin
             graph.select('.legend')
