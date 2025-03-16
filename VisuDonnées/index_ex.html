@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed & Sticky amélioré</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 200vh; /* Simule un long scroll */
+        }
+
+        /* Barre FIXE */
+        .fixed-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: red;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        /* Div optionnelle (fixe sous le rouge, cachée par défaut) */
+        .optional-box {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background-color: orange;
+            color: black;
+            padding: 15px;
+            text-align: center;
+            z-index: 999;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        /* Affichage avec une classe */
+        .optional-box.visible {
+            max-height: 100px; /* Ajuster selon le contenu */
+            opacity: 1;
+        }
+
+        /* Élément STICKY (bloqué sous l'optionnelle) */
+        .sticky-box {
+            position: sticky;
+            top: 50px; /* Par défaut sous le fixed */
+            background-color: blue;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            transition: top 0.3s ease-in-out;
+        }
+
+        /* Ajustement quand la div orange est affichée */
+        .optional-box.visible ~ .content .sticky-box {
+            top: 100px; /* Descend sous la div orange */
+        }
+
+        /* Contenu principal */
+        .content {
+            background-color: lightgray;
+            height: 1200px;
+            margin-top: 50px; /* Ajuste le placement */
+            transition: margin-top 0.3s ease-in-out;
+        }
+
+        /* Ajustement quand la div orange est affichée */
+        .optional-box.visible ~ .content {
+            margin-top: 100px; /* Décale tout sous la div orange */
+        }
+
+        /* Bouton TOGGLE */
+        .toggle-btn {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background-color: black;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            z-index: 1001; /* Toujours visible */
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fixed-nav">Je suis FIXED (reste toujours en haut)</div>
+    
+    <!-- Bouton pour afficher/masquer la div optionnelle -->
+    <button class="toggle-btn" onclick="toggleOptionalBox()">Afficher/Masquer</button>
+
+    <!-- Nouvelle div optionnelle (fixe sous la barre rouge) -->
+    <div class="optional-box" id="optionalBox">Je suis une OPTIONNELLE BOX (orange)</div>
+
+    <div class="content">
+        <div class="sticky-box">Je suis STICKY (bloqué sous l'optionnelle)</div>
+
+        <p>Beaucoup de texte pour tester...</p>
+        <p style="height: 800px;">Continue de scroller...</p>
+    </div>
+
+    <script>
+        function toggleOptionalBox() {
+            let optionalBox = document.getElementById("optionalBox");
+            optionalBox.classList.toggle("visible"); // Ajoute/enlève la classe visible
+        }
+    </script>
+
+</body>
+</html>
