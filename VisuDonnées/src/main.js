@@ -49,16 +49,15 @@ Promise.all(promises)
         var colors = [...d3.schemeCategory10, '#FFF']
         var model = {}
 
+        creerGraphEvolutionCrimes();
+        creerGraphComparaisonCriminalite();
+        creerGraphEvolutionDep();
+        creerGraphEvolutionCarteCourbes();
+        creerBoxPlot();
+        creerGraphRepartitionFaits();
+        creerGraphDiffAnnee()
+        creerCarteCriminalite();
         creerTreeMap();
-        creerGraph11();
-        creerGraph1();
-        creerBoxPlot()
-        creerGraph2();
-        creerGraph5();
-        creerGraph3();
-        creerGraph4();
-        creerGraphMap();
-
 
         function getValue(d3Obj){return d3Obj._groups[0][0].value;}
         function fromCodeJSONtoCodeData(d){return d.properties['code'].replace(/^0+/, '')}
@@ -159,48 +158,52 @@ Promise.all(promises)
             return "Département inconnu";
         }
 
-        function creerGraph11(){
-            let graph = d3.select('#graph11')
-            let axeX = graph.select('svg').append('g').classed('axeX', true)
-            let axeY = graph.select('svg').append('g').classed('axeY', true)
-
-            let max = d3.max(annees, d => getTotal(d))
+        function creerGraphEvolutionCrimes() {
+            let graph = d3.select('#graphEvolCrimes');
+            let svg = graph.select("svg");
+        
+            let axeX = svg.append('g').classed('axeX', true);
+            let axeY = svg.append('g').classed('axeY', true);
+        
+            let max = d3.max(annees, d => getTotal(d));
             let xScale = d3.scaleBand().domain(annees).range([marge.gauche, largeur]);
             let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
+        
             let xAxis = g => g
                 .attr("transform", `translate(0, ${hauteur - marge.bas})`)
                 .call(d3.axisBottom(xScale).tickSizeOuter(0));
+        
             let yAxis = g => g
                 .attr("transform", `translate(${marge.gauche},0)`)
-                .call(d3.axisLeft(yScale))
-
-            graph.select('svg').selectAll('rect').data(annees).enter().append('rect')
-                .attr("height", d =>  yScale(0) - yScale(getTotal(d)))
+                .call(d3.axisLeft(yScale));
+        
+            svg.selectAll('rect').data(annees).enter().append('rect')
+                .attr("height", d => yScale(0) - yScale(getTotal(d)))
                 .attr('width', xScale.bandwidth() - 1)
                 .attr('x', d => xScale(d))
                 .attr('y', d => yScale(getTotal(d)))
-                .style("fill", "blue")
-                .classed('total',true)
-
-            graph.select('svg').selectAll('rect')
+                .style("fill", "rgb(31, 119, 180)") // Attribution des couleurs par année
+                .classed('total', true);
+        
+            svg.selectAll('rect')
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", "100")
-                        .html(getTotal(d) +' faits');
+                        .html(getTotal(d) + ' faits');
                 })
                 .on("mousemove", (event) => {
                     tooltip.style("top", (event.pageY + 10) + "px")
                         .style("left", (event.pageX + 10) + "px");
                 })
                 .on("mouseout", () => {
-                    tooltip.style("opacity", "0")
+                    tooltip.style("opacity", "0");
                 });
-
+        
             axeX.call(xAxis);
             axeY.call(yAxis);
-        }
+        }        
 
-        function creerGraph1(){
-            let graph = d3.select('#graph1')
+        function creerGraphComparaisonCriminalite() {
+            let graph = d3.select('#graphComparaisonCrimes')
             let axeX = graph.select('svg').append('g').classed('axeX', true)
             let axeY = graph.select('svg').append('g').classed('axeY', true)
             let fait = getValue(graph.select('.listFait'))
@@ -226,7 +229,7 @@ Promise.all(promises)
                 .attr('width', xScale.bandwidth() - 1)
                 .attr('x', d => xScale(d))
                 .attr('y', d => yScale(getTotalFait(d,fait)))
-                .style("fill", "blue")
+                .style("fill", "rgb(31, 119, 180)")
                 .classed('total',true)
 
             s.enter().append('rect').merge(s)
@@ -234,7 +237,7 @@ Promise.all(promises)
                 .attr('width', xScale.bandwidth() - 11)
                 .attr('x', d => xScale(d)+5)
                 .attr('y', d => yScale(refinedData[d][fait][dep]))
-                .style("fill", "red")
+                .style("fill", "lightgreen")
                 .classed('ind',true)
                 .raise()
 
@@ -269,62 +272,68 @@ Promise.all(promises)
             }
         }
 
-        function creerGraph2(){
-            let graph = d3.select('#graph2')
-            let axeX = graph.select('svg').append('g').classed('axeX', true)
-            let axeY = graph.select('svg').append('g').classed('axeY', true)
-            let fait = getValue(graph.select('.listFait'))
-            let dep = getValue(graph.select('.listDep'))
+        function creerGraphEvolutionDep() {
+            let graph = d3.select('#graphEvolDep');
+            let svg = graph.select("svg");
+        
+            let axeX = svg.append('g').classed('axeX', true);
+            let axeY = svg.append('g').classed('axeY', true);
             
-            graph.select('.listFait').on('change',function(){updateGraph()})
-            graph.select('.listDep').on('change',function(){updateGraph()})
-
-            let max = d3.max(annees, d => refinedData[d][fait][dep])
+            let fait = getValue(graph.select('.listFait'));
+            let dep = getValue(graph.select('.listDep'));
+        
+            graph.select('.listFait').on('change', function () { updateGraph(); });
+            graph.select('.listDep').on('change', function () { updateGraph(); });
+        
+            let max = d3.max(annees, d => refinedData[d][fait][dep]);
             let xScale = d3.scaleBand().domain(annees).range([marge.gauche, largeur]);
             let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
+        
             let xAxis = g => g
                 .attr("transform", `translate(0, ${hauteur - marge.bas})`)
                 .call(d3.axisBottom(xScale).tickSizeOuter(0));
+        
             let yAxis = g => g
                 .attr("transform", `translate(${marge.gauche},0)`)
-                .call(d3.axisLeft(yScale))
-
-            graph.select('svg').selectAll('rect').data(annees).enter().append('rect')
+                .call(d3.axisLeft(yScale));
+        
+            svg.selectAll('rect').data(annees).enter().append('rect')
                 .attr('x', d => xScale(d))
                 .attr('y', d => yScale(refinedData[d][fait][dep]))
-                .attr('height', d => yScale(0)-yScale(refinedData[d][fait][dep]))
+                .attr('height', d => yScale(0) - yScale(refinedData[d][fait][dep]))
                 .attr('width', xScale.bandwidth() - 1)
-                .style('fill','blue')
-
+                .style('fill', 'rgb(31, 119, 180)');
+        
             axeX.call(xAxis);
             axeY.call(yAxis);
-
-            function updateGraph(){
-                let graph = d3.select("#graph2")
-                let fait = getValue(graph.select('.listFait'))
-                let dep = getValue(graph.select('.listDep'))
-                let max = d3.max(annees, d => refinedData[d][fait][dep])
+        
+            function updateGraph() {
+                let fait = getValue(graph.select('.listFait'));
+                let dep = getValue(graph.select('.listDep'));
+        
+                let max = d3.max(annees, d => refinedData[d][fait][dep]);
                 let yScale = d3.scaleLinear().domain([0, max]).range([hauteur - marge.bas, marge.haut]);
-                
+        
                 let yAxis = g => g
                     .attr("transform", `translate(${marge.gauche},0)`)
-                    .call(d3.axisLeft(yScale))
-                
-                graph.selectAll('rect').data(annees)
+                    .call(d3.axisLeft(yScale));
+        
+                svg.selectAll('rect').data(annees)
                     .transition()
-                    .duration(duration)
+                    .duration(500)
                     .attr('y', d => yScale(refinedData[d][fait][dep]))
-                    .attr('height', d => yScale(0)-yScale(refinedData[d][fait][dep]))
-                
-                graph.select('.axeY').transition().duration(500).call(yAxis)
+                    .attr('height', d => yScale(0) - yScale(refinedData[d][fait][dep]))
+                    .style('fill', d => colorScale(d)); // Mise à jour des couleurs
+        
+                svg.select('.axeY').transition().duration(500).call(yAxis);
             }
-        }
+        }        
 
-        function creerGraph3(){
+        function creerGraphEvolutionCarteCourbes() {
             let col = {}
             model[3] = {col}
 
-            let graph = d3.select('#graph3')
+            let graph = d3.select('#graphEvolCarteCourbes')
             let fait = getValue(graph.select('.listFait'))
             graph.select('.listFait').on('change',function(){updateGraph()})
             let axeX = graph.select('svg').append('g').classed('axeX', true)
@@ -470,8 +479,126 @@ Promise.all(promises)
             }
         }
 
-        function creerGraph4(){
-            let graph = d3.select('#graph4')
+        function creerBoxPlot() {
+            let graph = d3.select("#boxplot");
+            let svg = graph.select("svg");
+        
+            if (svg.empty()) {
+                svg = graph.append("svg")
+                    .attr("width", largeur)
+                    .attr("height", hauteur);
+            } else {
+                svg.selectAll("*").remove();
+            }
+        
+            let axeX = svg.append("g").classed("axeX", true);
+            let axeY = svg.append("g").classed("axeY", true);
+        
+            graph.select(".listFait").on("change", updateGraph);
+            graph.select(".listDep").on("change", updateGraph);
+        
+            function updateGraph() {
+                let fait = getValue(graph.select(".listFait"));
+        
+                let boxData = annees.map(annee => {
+                    let data = Object.values(refinedData[annee][fait]);
+                    if (!data || data.length === 0) return null;
+        
+                    data.sort(d3.ascending);
+        
+                    return {
+                        annee,
+                        min: d3.min(data),
+                        q1: d3.quantile(data, 0.25),
+                        median: d3.quantile(data, 0.5),
+                        q3: d3.quantile(data, 0.75),
+                        max: d3.max(data)
+                    };
+                }).filter(d => d !== null);
+        
+                if (boxData.length === 0) {
+                    console.error("Aucune donnée disponible.");
+                    return;
+                }
+        
+                let xScale = d3.scaleBand()
+                    .domain(boxData.map(d => d.annee))
+                    .range([marge.gauche, largeur - marge.droite])
+                    .padding(0.2);
+        
+                let maxVal = d3.max(boxData, d => d.max);
+                let yScale = d3.scaleLinear()
+                    .domain([0, maxVal + 10])
+                    .range([hauteur - marge.bas, marge.haut]);
+        
+                let xAxis = g => g
+                    .attr("transform", `translate(0, ${hauteur - marge.bas})`)
+                    .call(d3.axisBottom(xScale));
+        
+                let yAxis = g => g
+                    .attr("transform", `translate(${marge.gauche},0)`)
+                    .call(d3.axisLeft(yScale));
+        
+                // Échelle de couleurs pour différencier les années
+                let colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+                    .domain(annees);
+        
+                // Boîtes (Q1 -> Q3)
+                svg.selectAll(".box").data(boxData).join("rect")
+                    .classed("box", true)
+                    .transition().duration(500)
+                    .attr("x", d => xScale(d.annee))
+                    .attr("y", d => yScale(d.q3))
+                    .attr("width", xScale.bandwidth() - 5)
+                    .attr("height", d => yScale(d.q1) - yScale(d.q3))
+                    .style("fill", d => colorScale(d.annee)) // Assignation des couleurs
+                    .style("opacity", 0.7)
+                    .style("stroke", "black")
+                    .style("stroke-width", 1.5);
+        
+                // Médianes
+                svg.selectAll(".median").data(boxData).join("line")
+                    .classed("median", true)
+                    .transition().duration(500)
+                    .attr("x1", d => xScale(d.annee))
+                    .attr("x2", d => xScale(d.annee) + (xScale.bandwidth() - 5))
+                    .attr("y1", d => yScale(d.median))
+                    .attr("y2", d => yScale(d.median))
+                    .style("stroke", "red")
+                    .style("stroke-width", 2);
+        
+                // Whiskers (min/max)
+                svg.selectAll(".whisker").data(boxData.flatMap(d => [d.min, d.max])).join("line")
+                    .classed("whisker", true)
+                    .transition().duration(500)
+                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
+                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
+                    .attr("y1", d => yScale(d))
+                    .attr("y2", (d, i) => yScale(i % 2 === 0 ? boxData[Math.floor(i / 2)].q1 : boxData[Math.floor(i / 2)].q3))
+                    .style("stroke", "black")
+                    .style("stroke-width", 2);
+        
+                // Caps des whiskers
+                svg.selectAll(".whisker-cap").data(boxData.flatMap(d => [d.min, d.max])).join("line")
+                    .classed("whisker-cap", true)
+                    .transition().duration(500)
+                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 4)
+                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + 3 * xScale.bandwidth() / 4)
+                    .attr("y1", d => yScale(d))
+                    .attr("y2", d => yScale(d))
+                    .style("stroke", "black")
+                    .style("stroke-width", 2);
+        
+                // Mise à jour des axes
+                axeX.transition().duration(500).call(xAxis);
+                axeY.transition().duration(500).call(yAxis);
+            }
+        
+            updateGraph();
+        }
+
+        function creerGraphRepartitionFaits() {
+            let graph = d3.select('#graphRepartitionFaits')
 
             let axeX = graph.select('svg').append('g').classed('axeX', true)
             let axeY = graph.select('svg').append('g').classed('axeY', true)
@@ -497,7 +624,7 @@ Promise.all(promises)
                 .attr('y', d => yScale(refinedData[annee][d][dep]))
                 .attr('height', d => yScale(0)-yScale(refinedData[annee][d][dep]))
                 .attr('width', xScale.bandwidth() - 1)
-                .style('fill','blue')
+                .style('fill','rgb(31, 119, 180)')
 
             axeX.call(xAxis);
             axeY.call(yAxis);
@@ -521,10 +648,69 @@ Promise.all(promises)
                 
                 graph.select('.axeY').transition().duration(500).call(yAxis)
             }
-        }        
+        }  
+        
+        function creerGraphDiffAnnee() {
+            let graph = d3.select("#graphDiffAnnee");
+            let axeX = graph.select("svg").append("g").classed("axeX", true);
+            let axeY = graph.select("svg").append("g").classed("axeY", true);
+            let fait = getValue(graph.select(".listFait"));
+            let dep = getValue(graph.select(".listDep"));
+        
+            graph.select(".listFait").on("change", function () { updateGraph(); });
+            graph.select(".listDep").on("change", function () { updateGraph(); });
+        
+            let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
+            let xScale = d3.scaleBand().domain(annees.slice(1)).range([marge.gauche, largeur]);
+            let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
+        
+            let xAxis = g => g
+                .call(d3.axisBottom(xScale).tickSizeOuter(0))
+                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
 
-        function creerGraphMap(){
-            let graph = d3.select('#map')
+            let yAxis = g => g
+                .call(d3.axisLeft(yScale))
+                .attr("transform", `translate(${marge.gauche},0)`);
+        
+            graph.select("svg").selectAll("rect").data(annees).enter().append("rect")
+                .attr("x", d => xScale(d))
+                .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
+                .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
+                .attr("width", xScale.bandwidth() - 5)
+                .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(31, 119, 180)" : "rgb(214, 39, 40)");
+        
+            axeX.call(xAxis);
+            axeY.call(yAxis);
+        
+            function updateGraph() {
+                let graph = d3.select("#graphDiffAnnee");
+                let fait = getValue(graph.select(".listFait"));
+                let dep = getValue(graph.select(".listDep"));
+                let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
+                let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
+
+                let yAxis = g => g
+                    .call(d3.axisLeft(yScale))
+                    .attr("transform", `translate(${marge.gauche},0)`);
+        
+                graph.selectAll("rect").data(annees)
+                    .transition()
+                    .duration(500)
+                    .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
+                    .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
+                    .style("fill", d => getDifference(d, fait, dep) >= 0 ? "rgb(31, 119, 180)" : "rgb(214, 39, 40)");
+        
+                graph.select(".axeY").transition().duration(500).call(yAxis);
+            }
+        }
+
+        function getDifference(annee, fait, dep) { // fonction lié à creerGraphDiffAnnee()
+            if (!refinedData[annee] || !refinedData[annee - 1]) return 0;
+            return (refinedData[annee][fait][dep] || 0) - (refinedData[annee - 1][fait][dep] || 0);
+        }
+
+        function creerCarteCriminalite() {
+            let graph = d3.select('#carteCrimes')
 
             let annee = getValue(graph.select('.listAnnee'))
             let fait = getValue(graph.select('.listFait'))
@@ -741,14 +927,11 @@ Promise.all(promises)
 
                     let temp = d3.select(this).selectAll('rect').data(d)
                     temp.enter().append('rect').merge(temp)
-                   
                         .transition()
                         .duration(duration)
                         .attr('width', d => d.x1 - d.x0)
                         .attr('height', d => d.y1 - d.y0)
                         .style('fill', d => model['treeMap'][getRegionByDepartement(d.data.name)])
-
-
 
                     let temp2 = d3.select(this).selectAll('text').data(d)
                         temp2.enter().append('text').merge(temp2)
@@ -759,7 +942,7 @@ Promise.all(promises)
                             .text(d => d.data.name)
                             .attr('fill', d => d.data.value == 0 ? 'none' : 'black')
                             .style('font-size', '12px')
-                            .style('overflow', 'hidden');                       
+                            .style('overflow', 'hidden');             
                         
                 })
 
@@ -794,185 +977,7 @@ Promise.all(promises)
                     .style('font-size', '14px')
                     .style('fill', '#000');
             });
-        }        
-
-        function creerGraph5() {
-            let graph = d3.select("#graph5");
-            let axeX = graph.select("svg").append("g").classed("axeX", true);
-            let axeY = graph.select("svg").append("g").classed("axeY", true);
-            let fait = getValue(graph.select(".listFait"));
-            let dep = getValue(graph.select(".listDep"));
-        
-            graph.select(".listFait").on("change", function () { updateGraph(); });
-            graph.select(".listDep").on("change", function () { updateGraph(); });
-        
-            let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
-            let xScale = d3.scaleBand().domain(annees.slice(1)).range([marge.gauche, largeur]);
-            let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
-        
-            let xAxis = g => g
-                .call(d3.axisBottom(xScale).tickSizeOuter(0))
-                .attr("transform", `translate(0, ${hauteur - marge.bas})`)
-
-            let yAxis = g => g
-                .call(d3.axisLeft(yScale))
-                .attr("transform", `translate(${marge.gauche},0)`);
-        
-            graph.select("svg").selectAll("rect").data(annees).enter().append("rect")
-                .attr("x", d => xScale(d))
-                .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
-                .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
-                .attr("width", xScale.bandwidth() - 5)
-                .style("fill", d => getDifference(d, fait, dep) >= 0 ? "blue" : "red");
-        
-            axeX.call(xAxis);
-            axeY.call(yAxis);
-        
-            function updateGraph() {
-                let graph = d3.select("#graph5");
-                let fait = getValue(graph.select(".listFait"));
-                let dep = getValue(graph.select(".listDep"));
-                let max = d3.max(annees, d => Math.abs(getDifference(d, fait, dep))); 
-                let yScale = d3.scaleLinear().domain([-max, max]).range([hauteur - marge.bas, marge.haut]);
-
-                let yAxis = g => g
-                    .call(d3.axisLeft(yScale))
-                    .attr("transform", `translate(${marge.gauche},0)`);
-        
-                graph.selectAll("rect").data(annees)
-                    .transition()
-                    .duration(500)
-                    .attr("y", d => getDifference(d, fait, dep) >= 0 ? yScale(getDifference(d, fait, dep)) : yScale(0))
-                    .attr("height", d => Math.abs(yScale(0) - yScale(getDifference(d, fait, dep))))
-                    .style("fill", d => getDifference(d, fait, dep) >= 0 ? "blue" : "red");
-        
-                graph.select(".axeY").transition().duration(500).call(yAxis);
-            }
-        }
-        
-        function getDifference(annee, fait, dep) {
-            if (!refinedData[annee] || !refinedData[annee - 1]) return 0;
-            return (refinedData[annee][fait][dep] || 0) - (refinedData[annee - 1][fait][dep] || 0);
-        }
-        
-        function creerBoxPlot() {
-            let graph = d3.select("#boxplot");
-            let svg = graph.select("svg");
-
-            // Vérifie si le svg existe, sinon l'ajoute
-            if (svg.empty()) {
-                svg = graph.append("svg")
-                    .attr("width", largeur)
-                    .attr("height", hauteur);
-            } else {
-                svg.selectAll("*").remove(); // Nettoyage avant redraw
-            }
-            
-            let axeX = svg.append("g").classed("axeX", true);
-            let axeY = svg.append("g").classed("axeY", true);
-            
-            graph.select(".listFait").on("change", updateGraph);
-            graph.select(".listDep").on("change", updateGraph);
-            
-            function updateGraph() {
-                let fait = getValue(graph.select(".listFait"));
-            
-                // Récupération des données pour toutes les années
-                let boxData = annees.map(annee => {
-                    let data = Object.values(refinedData[annee][fait]);
-                    if (!data || data.length === 0) return null;
-        
-                    data.sort(d3.ascending);
-        
-                    return {
-                        annee,
-                        min: d3.min(data),
-                        q1: d3.quantile(data, 0.25),
-                        median: d3.quantile(data, 0.5),
-                        q3: d3.quantile(data, 0.75),
-                        max: d3.max(data)
-                    };
-                }).filter(d => d !== null); // Supprime les années sans données
-        
-                if (boxData.length === 0) {
-                    console.error("Aucune donnée disponible.");
-                    return;
-                }
-        
-                console.log("Box plot data:", boxData);
-        
-                let xScale = d3.scaleBand()
-                    .domain(boxData.map(d => d.annee))
-                    .range([marge.gauche, largeur - marge.droite])
-                    .padding(0.2);
-        
-                let maxVal = d3.max(boxData, d => d.max);
-                let yScale = d3.scaleLinear()
-                    .domain([0, maxVal + 10])
-                    .range([hauteur - marge.bas, marge.haut]);
-        
-                let xAxis = g => g
-                    .attr("transform", `translate(0, ${hauteur - marge.bas})`)
-                    .call(d3.axisBottom(xScale));
-        
-                let yAxis = g => g
-                    .attr("transform", `translate(${marge.gauche},0)`)
-                    .call(d3.axisLeft(yScale));
-        
-                // Boîtes (Q1 -> Q3)
-                svg.selectAll(".box").data(boxData).join("rect")
-                    .classed("box", true)
-                    .transition().duration(500)
-                    .attr("x", d => xScale(d.annee))
-                    .attr("y", d => yScale(d.q3))
-                    .attr("width", xScale.bandwidth() - 5)
-                    .attr("height", d => yScale(d.q1) - yScale(d.q3))
-                    .style("fill", "steelblue")
-                    .style("opacity", 0.7)
-                    .style("stroke", "black")
-                    .style("stroke-width", 1.5);
-        
-                // Médianes
-                svg.selectAll(".median").data(boxData).join("line")
-                    .classed("median", true)
-                    .transition().duration(500)
-                    .attr("x1", d => xScale(d.annee))
-                    .attr("x2", d => xScale(d.annee) + (xScale.bandwidth() - 5))
-                    .attr("y1", d => yScale(d.median))
-                    .attr("y2", d => yScale(d.median))
-                    .style("stroke", "red")
-                    .style("stroke-width", 2);
-        
-                // Whiskers (min/max)
-                svg.selectAll(".whisker").data(boxData.flatMap(d => [d.min, d.max])).join("line")
-                    .classed("whisker", true)
-                    .transition().duration(500)
-                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
-                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 2)
-                    .attr("y1", d => yScale(d))
-                    .attr("y2", (d, i) => yScale(i % 2 === 0 ? boxData[Math.floor(i / 2)].q1 : boxData[Math.floor(i / 2)].q3))
-                    .style("stroke", "black")
-                    .style("stroke-width", 2);
-        
-                // Caps des whiskers
-                svg.selectAll(".whisker-cap").data(boxData.flatMap(d => [d.min, d.max])).join("line")
-                    .classed("whisker-cap", true)
-                    .transition().duration(500)
-                    .attr("x1", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + xScale.bandwidth() / 4)
-                    .attr("x2", (d, i) => xScale(boxData[Math.floor(i / 2)].annee) + 3 * xScale.bandwidth() / 4)
-                    .attr("y1", d => yScale(d))
-                    .attr("y2", d => yScale(d))
-                    .style("stroke", "black")
-                    .style("stroke-width", 2);
-        
-                // Mise à jour des axes
-                axeX.transition().duration(500).call(xAxis);
-                axeY.transition().duration(500).call(yAxis);
-            }
-        
-            // Initialisation
-            updateGraph();
-        }    
+        }                 
             
         }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);

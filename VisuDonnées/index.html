@@ -3,10 +3,16 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>Etude graphique des faits en France</title>
-        <link rel="styleSheet" href="src/style.css" />
+        <meta name="description" content="Visualisation des faits criminels en France à travers des graphiques interactifs.">
+        <title>Étude Graphique des Faits en France</title>
+        <link rel="stylesheet" href="src/style.css">
     </head>
     <body>
+        <header class="text-center p-4 bg-light">
+            <h1>Étude Graphique des Faits en France</h1>
+            <p>Explorez l'évolution des faits criminels à travers différents graphiques interactifs.</p>
+        </header>
+
         <!--<svg style="display:hidden">
             <defs>
                 <pattern id="pattern-one" viewBox="0, 0, 11, 11" width="15%" height="15%" fill="red">
@@ -20,26 +26,198 @@
                 </pattern>
             </defs>
         </svg>-->
-        <h1>Etude graphique des faits en France</h1>
 
         <div class="tooltip"></div>
 
         <nav>
             <div class="nav nav-tabs px-4 nav-justified" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Accueil</button>
-                <button class="nav-link" id="nav-q1-tab" data-bs-toggle="tab" data-bs-target="#nav-q1" type="button" role="tab" aria-controls="nav-q1" aria-selected="false">Question 1</button>
-                <button class="nav-link" id="nav-q2-tab" data-bs-toggle="tab" data-bs-target="#nav-q2" type="button" role="tab" aria-controls="nav-q2" aria-selected="false">Question 2</button>
-                <button class="nav-link" id="nav-q3-tab" data-bs-toggle="tab" data-bs-target="#nav-q3" type="button" role="tab" aria-controls="nav-q3" aria-selected="false">Question 3</button>
+                <button class="nav-link active" id="nav-description-tab" data-bs-toggle="tab" data-bs-target="#nav-description" type="button" role="tab">Description du sujet</button>
+                <button class="nav-link" id="nav-tendances-tab" data-bs-toggle="tab" data-bs-target="#nav-tendances" type="button" role="tab">Connaître les tendances</button>
+                <button class="nav-link" id="nav-profils-tab" data-bs-toggle="tab" data-bs-target="#nav-profils" type="button" role="tab">Analyser les profils des départements</button>
+                <button class="nav-link" id="nav-libre-tab" data-bs-toggle="tab" data-bs-target="#nav-libre" type="button" role="tab">Analyse visuelle libre</button>
             </div>
         </nav>
-
+    
         <div class="tab-content" id="nav-tabContent">
 
-            <!-- Accueil -->
-            <div class="tab-pane fade" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <!-- Description du sujet -->
+            <div class="tab-pane fade show active" id="nav-description" role="tabpanel">
+
+                <div class="container p-4">
+                    <div class="text-center font-h2">
+                        <h2>Présentation des Données</h2>
+                        <p>Les fichiers CSV contiennent des statistiques sur les faits constatés en France entre 2002 et 2010. Ces fichiers, nommés « faits2002.csv » à « faits2010.csv », offrent une vue détaillée des crimes et délits enregistrés dans les départements français au cours de cette période.</p>
+                    </div>
+
+                    <hr class="line">
+
+                    <h3>Tâches d’analyse visuelle</h3>
+                    <p>Le projet consiste à analyser ces données à travers des visualisations interactives pour mieux comprendre les tendances et les caractéristiques des faits criminels en France :</p>
+                    <ul>
+                        <li><strong>Tâche 1 : Connaître les tendances</strong></li>
+                        <ul>
+                            <li>Évolution globale (tous les départements confondus) pour un fait donné.</li>
+                            <li>Évolution détaillée (un département et/ou un fait sélectionné).</li>
+                        </ul>
+                        <li><strong>Tâche 2 : Analyser les profils des départements</strong></li>
+                        <ul>
+                            <li>Identifier les groupes et les cas particuliers parmi les départements.</li>
+                        </ul>
+                        <li><strong>Tâche 3 : Analyse libre</strong></li>
+                        <ul>
+                            <li>Définir une analyse visuelle supplémentaire, choisir la visualisation interactive la plus appropriée pour répondre à un besoin spécifique et la réaliser.</li>
+                        </ul>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Connaître les tendances -->
+            <div class="tab-pane fade text-center" id="nav-tendances" role="tabpanel">
+
+                <div class="font-h2">
+                    <h2>Évolution globale (tous les départements confondus) pour un fait donné</h2>
+                </div>
+                
+                <div id="graphEvolCrimes" class="container p-4">
+                    <h3>Évolution du nombre de faits criminels par année</h3>
+                    <svg></svg>       
+                </div>
+
+                <hr class="line">
+
+                <div class="font-h2">
+                    <h2>Évolution détaillée (un département et/ou un fait sélectionné)</h2>
+                </div>
+
+                <div id="graphComparaisonCrimes" class="container p-4">
+                    <h3>Comparaison des faits criminels : France vs Département sélectionné</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>            
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select class="listDep"></select>
+                        </label>                
+                    </div>
+                </div>
+
+                <hr class="line">
+
+                <div id="graphEvolDep" class="container p-4 ">
+                    <h3>Évolution des faits criminels par département</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select class="listDep"></select>
+                        </label>                 
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Analyse des Tendances -->
+            <div class="tab-pane fade text-center" id="nav-profils" role="tabpanel">
+
+                <div class="font-h2">
+                    <h2>Identification des groupes et des cas particuliers parmi les départements</h2>
+                </div>
+
+                <div id="graphEvolCarteCourbes" class="container p-4">
+                    <h3>Évolution des faits criminels par département (Carte + Courbes)</h3>
+                    <svg id="affichage"></svg>
+                    <svg id="depSelector"></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label >
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>                    
+                    </div>
+                </div>
+
+                <hr class="line">
+
+                <div id="boxplot" class="container p-4">
+                    <h3>Boîte à moustaches des faits criminels par année</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>              
+                    </div>
+                </div>
+
+                <hr class="line">
+
+                <div id="graphRepartitionFaits" class="container p-4">
+                    <h3>Répartition des faits criminels par type</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select class="listDep"></select>
+                        </label>     
+                        <label>
+                            <p>L'année étudié :</p>
+                            <select class="listAnnee"></select>
+                        </label>            
+                    </div>
+                </div>
+
+                <hr class="line">
+
+                <div id="graphDiffAnnee" class="container p-4 ">
+                    <h3>Evolution d'un fait d'une année à l'autre en fonction d'un département</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label>
+                        <label>
+                            <p>Le département étudié :</p>
+                            <select class="listDep"></select>
+                        </label>                 
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Analyse des Profils et Exploration -->
+            <div class="tab-pane fade text-center" id="nav-libre" role="tabpanel">
+
+                <div class="font-h2">
+                    <h2>Définition d'analyses visuelles supplémentaires</h2>
+                </div>
+
+                <div id="carteCrimes" class="container p-4 ">
+                    <h3>Visualisation géographique d'un fait divers en France</h3>
+                    <svg></svg>
+                    <div id="selecteurs" class="d-flex justify-content-around">
+                        <label>
+                            <p>Le fait étudié :</p>
+                            <select class="listFait"></select>
+                        </label> 
+                        <label>
+                            <p>L'année étudié :</p>
+                            <select class="listAnnee"></select>
+                        </label> 
+                    </div>
+                </div>
+
+                <hr class="line">
 
                 <div id="graphTreeMap" class="container p-4">
-                    <h2>Nombre de crimes par année par département</h2>
+                    <h3>Nombre de crimes par année par département</h3>
                     <svg></svg>
                     <svg class="legend"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
@@ -56,129 +234,7 @@
 
             </div>
 
-            <!-- Question 1 -->
-            <div class="tab-pane fade" id="nav-q1" role="tabpanel" aria-labelledby="nav-q1-tab">
-
-                <div id="graph11" class="container">
-                    <h2>Evolution temporel des faits divers en France</h2>
-                    <svg></svg>         
-                </div>
-
-            </div>
-
-            <!-- Question 2 -->
-            <div class="tab-pane fade" id="nav-q2" role="tabpanel" aria-labelledby="nav-q2-tab">
-
-                <div id="graph1" class="container p-4">
-                    <h2>Evolution temporel d'un fait en France</h2>
-                    <svg></svg>
-                    <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
-                            <p>Le fait étudié :</p>
-                            <select class="listFait"></select>
-                        </label>            
-                        <label>
-                            <p>Le département étudié :</p>
-                            <select class="listDep"></select>
-                        </label>                
-                    </div>
-                </div>
-
-                <div id="boxplot" class="container p-4">
-                    <h2>Moyenne, Médiane et Quartiles d'un fait en France</h2>
-                    <svg></svg>
-                    <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
-                            <p>Le fait étudié :</p>
-                            <select class="listFait"></select>
-                        </label>              
-                    </div>
-                </div>
-
-                <div id="graph2" class="container p-4 ">
-                    <h2>Evolution temporelle d'un fait dans un département</h2>
-                    <svg></svg>
-                    <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
-                            <p>Le fait étudié :</p>
-                            <select class="listFait"></select>
-                        </label>
-                        <label>
-                            <p>Le département étudié :</p>
-                            <select class="listDep"></select>
-                        </label>                 
-                    </div>
-                </div>
-
-                <div id="graph5" class="container p-4 ">
-                    <h2>Evolution d'un fait d'une année à l'autre en fonction d'un département</h2>
-                    <svg></svg>
-                    <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
-                            <p>Le fait étudié :</p>
-                            <select class="listFait"></select>
-                        </label>
-                        <label>
-                            <p>Le département étudié :</p>
-                            <select class="listDep"></select>
-                        </label>                 
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Question 3 -->
-            <div class="tab-pane fade" id="nav-q3" role="tabpanel" aria-labelledby="nav-q3-tab">
-
-                <div id="graph3">
-                    <h2>Evolutions temporels d'un fait divers dans les départements</h2>
-                    <div class="container p-4">
-                        <svg id="affichage"></svg>
-                        <svg id="depSelector"></svg>
-                        <div id="selecteurs" class="d-flex justify-content-around">
-                            <label >
-                                <p>Le fait étudié :</p>
-                                <select class="listFait"></select>
-                            </label>                    
-                        </div>
-                    </div>
-                </div>
-
-                <div id="graph4">
-                    <h2>Nombre des faits divers dans un départements pour une période</h2>
-                    <div class="container p-4">
-                        <svg></svg>
-                        <div id="selecteurs" class="d-flex justify-content-around">
-                            <label>
-                                <p>L'année étudié :</p>
-                                <select class="listAnnee"></select>
-                            </label>
-                            <label>
-                                <p>Le département étudié :</p>
-                                <select class="listDep"></select>
-                            </label>                 
-                        </div>
-                    </div>
-                </div>
-
-                <div id="map" class="container p-4 ">
-                    <h2>Visualisation géographique d'un fait divers en France</h2>
-                    <svg></svg>
-                    <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
-                            <p>L'année étudié :</p>
-                            <select class="listAnnee"></select>
-                        </label>
-                        <label>
-                            <p>Le fait étudié :</p>
-                            <select class="listFait"></select>
-                        </label>  
-                    </div>
-                </div>
-            </div>
         </div>
-
-
 
         <script type="module" src="src/main.js" charset="utf-8"></script>
         <!--
