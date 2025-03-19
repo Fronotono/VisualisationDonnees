@@ -36,6 +36,10 @@ body {
   font-weight: bold; /* Met le texte en gras pour plus de lisibilité */
 }
 
+#resetZoom {
+  background-color:rgb(31, 119, 180);
+}
+
 /*.line {
   stroke : steelblue;
   fill : none;

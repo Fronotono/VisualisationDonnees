@@ -870,22 +870,21 @@ Promise.all(promises)
 
             }
         }
-
+       
         function creerTreeMap() {
-            model['treeMap']  = {}
+            model['treeMap'] = {}
             model['treeMap']['palette'] = [...d3.schemePaired, 'url("#pattern-two")']
-
+        
             regions.forEach(
                 function(d,i){
                     model['treeMap'][d] = model['treeMap']['palette'][i % model['treeMap']['palette'].length]
-                    console.log(model['treeMap'][d])
                 }
             )
-
+        
             let graph = d3.select('#graphTreeMap');
-            let annee = getValue(d3.select('.listAnnee'));
-            let fait = getValue(d3.select('.listFait'));
-
+            let annee = getValue(graph.select('.listAnnee'));
+            let fait = getValue(graph.select('.listFait'));
+        
             let filteredData = {
                 name: annee,
                 children: Object.keys(departementsParRegion).map(reg => ({
@@ -898,98 +897,129 @@ Promise.all(promises)
                         }))
                 }))
             };
-            
+        
             let root = d3.hierarchy(filteredData)
                 .sum(d => d.value)
                 .sort((a, b) => b.value - a.value);
-            
+        
             let treemap = d3.treemap()
                 .size([largeur, hauteur])
                 .padding(1);
-            
+        
             treemap(root);
-            
+        
             let color = d3.scaleOrdinal(d3.schemePaired);
             let svg = graph.select('svg');
-            
-            let nodes = svg
+        
+            svg.select('.zoom-container').remove();
+            let zoomContainer = svg.append('g').attr('class', 'zoom-container');
+        
+            let nodes = zoomContainer
                 .selectAll('g')
-                .data(root.leaves())
-
-            nodes.selectAll('g').data(root.leaves()).exit().remove()
-
+                .data(root.leaves());
+        
+            nodes.exit().remove();
+        
+            let zoom = d3.zoom()
+                .scaleExtent([1, 4])
+                .on("zoom", function (event) {
+                    zoomContainer.attr("transform", event.transform);
+                });
+        
+            svg.call(zoom);
+        
             nodes.enter().append('g').merge(nodes)
                 .on("mouseenter", (event, d) => {
                     tooltip.style("opacity", "100")
-                        .html( d.data.name + ' - ' +nomDepartement[d.data.name]+"<br>"+ d.data.value + ' fait(s)');
+                        .html(d.data.name + ' - ' + nomDepartement[d.data.name] + "<br>" + d.data.value + ' fait(s)');
                 })
                 .on("mousemove", (event) => {
                     tooltip.style("top", (event.pageY + 10) + "px")
                         .style("left", (event.pageX + 10) + "px");
                 })
                 .on("mouseleave", () => {
-                    tooltip.style("opacity", "0")
-                })             
+                    tooltip.style("opacity", "0");
+                })
+                .on("click", (event, d) => {
+                    let region = getRegionByDepartement(d.data.name);
+                    let regionNodes = root.leaves().filter(dep => getRegionByDepartement(dep.data.name) === region);
+                    
+                    let x0 = d3.min(regionNodes, n => n.x0);
+                    let y0 = d3.min(regionNodes, n => n.y0);
+                    let x1 = d3.max(regionNodes, n => n.x1);
+                    let y1 = d3.max(regionNodes, n => n.y1);
+                    
+                    let dx = x1 - x0;
+                    let dy = y1 - y0;
+                    let x = (x0 + x1) / 2;
+                    let y = (y0 + y1) / 2;
+                    let scale = Math.min(largeur / dx, hauteur / dy, 4);
+        
+                    svg.transition().duration(750).call(
+                        zoom.transform,
+                        d3.zoomIdentity
+                            .translate(largeur / 2 - x * scale, hauteur / 2 - y * scale)
+                            .scale(scale)
+                    );
+                })
                 .transition()
                 .duration(duration)
                 .attr('transform', d => `translate(${d.x0},${d.y0})`)
                 .attr('valeur', d => d.data.value)
-                .each( function(d,i){
-
-                    let temp = d3.select(this).selectAll('rect').data(d)
+                .each(function (d, i) {
+                    let temp = d3.select(this).selectAll('rect').data(d);
                     temp.enter().append('rect').merge(temp)
                         .transition()
                         .duration(duration)
                         .attr('width', d => d.x1 - d.x0)
                         .attr('height', d => d.y1 - d.y0)
-                        .style('fill', d => model['treeMap'][getRegionByDepartement(d.data.name)])
-
-                    let temp2 = d3.select(this).selectAll('text').data(d)
-                        temp2.enter().append('text').merge(temp2)
-                            .transition()
-                            .duration(duration)
-                            .attr('x', d => (d.x1 - d.x0) / 2 - 4)
-                            .attr('y', d => (d.y1 - d.y0) / 2 + 4)
-                            .text(d => d.data.name)
-                            .attr('fill', d => d.data.value == 0 ? 'none' : 'black')
-                            .style('font-size', '12px')
-                            .style('overflow', 'hidden');             
-                        
-                })
-
-            nodes.selectAll('rect')
-                
-                
+                        .style('fill', d => model['treeMap'][getRegionByDepartement(d.data.name)]);
+        
+                    let temp2 = d3.select(this).selectAll('text').data(d);
+                    temp2.enter().append('text').merge(temp2)
+                        .transition()
+                        .duration(duration)
+                        .attr('x', d => (d.x1 - d.x0) / 2 - 4)
+                        .attr('y', d => (d.y1 - d.y0) / 2 + 4)
+                        .text(d => d.data.name)
+                        .attr('fill', d => d.data.value == 0 ? 'none' : 'black')
+                        .style('font-size', '12px')
+                        .style('overflow', 'hidden');
+                });
+        
             graph.select('.listAnnee').on('change', creerTreeMap);
             graph.select('.listFait').on('change', creerTreeMap);
-
-            //Création de la legend dans un svg voisin
-            graph.select('.legend')
-            .style('width', '300px')
-            .selectAll()
-            .data(Object.keys(departementsParRegion))
-            .enter()
-            .append('g') // Crée un groupe pour chaque élément (rect + text)
-            .each(function (d, i) {
-                d3.select(this)
-                    .append('rect')
-                    .style('fill', model['treeMap'][d])
-                    .attr('height', '20px')
-                    .attr('width', '20px')
-                    .attr('y', 5 + 22 * i + 'px')
-                    .attr('x', '0px')
         
-                d3.select(this)
-                    .append('text')
-                    .text(d)
-                    .attr('x', '25px') // Décalage à droite du rectangle
-                    .attr('y', 15 + 22 * i + 'px') // Alignement vertical avec le rectangle
-                    .attr('alignment-baseline', 'middle')
-                    .style('font-size', '14px')
-                    .style('fill', '#000');
+            d3.select("#resetZoom").on("click", function() {
+                svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
             });
-        }                 
-            
+        
+            graph.select('.legend')
+                .style('width', '300px')
+                .selectAll()
+                .data(Object.keys(departementsParRegion))
+                .enter()
+                .append('g')
+                .each(function (d, i) {
+                    d3.select(this)
+                        .append('rect')
+                        .style('fill', model['treeMap'][d])
+                        .attr('height', '20px')
+                        .attr('width', '20px')
+                        .attr('y', 5 + 22 * i + 'px')
+                        .attr('x', '0px');
+        
+                    d3.select(this)
+                        .append('text')
+                        .text(d)
+                        .attr('x', '25px')
+                        .attr('y', 15 + 22 * i + 'px')
+                        .attr('alignment-baseline', 'middle')
+                        .style('font-size', '14px')
+                        .style('fill', '#000');
+                });
+        }
+                
         }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);
 });
