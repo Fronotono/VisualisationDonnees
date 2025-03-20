@@ -493,8 +493,17 @@ Promise.all(promises)
             let axeX = svg.append("g").classed("axeX", true);
             let axeY = svg.append("g").classed("axeY", true);
         
+            let isSqrtScale = false; // État de l'échelle
+        
             graph.select(".listFait").on("change", updateGraph);
             graph.select(".listDep").on("change", updateGraph);
+            d3.select("#toggleScale").on("click", toggleScale); // Ajoute un écouteur au bouton
+        
+            function toggleScale() {
+                isSqrtScale = !isSqrtScale;
+                d3.select("#toggleScale").text(isSqrtScale ? "Passer à l'échelle linéaire" : "Passer à l'échelle racine carrée");
+                updateGraph();
+            }
         
             function updateGraph() {
                 let fait = getValue(graph.select(".listFait"));
@@ -526,23 +535,17 @@ Promise.all(promises)
                     .padding(0.2);
         
                 let maxVal = d3.max(boxData, d => d.max);
-                let yScale = d3.scaleLinear()
-                    .domain([0, maxVal + 10])
-                    .range([hauteur - marge.bas, marge.haut]);
+                let yScale = isSqrtScale
+                    ? d3.scaleSqrt().domain([0, maxVal + 10]).range([hauteur - marge.bas, marge.haut])
+                    : d3.scaleLinear().domain([0, maxVal + 10]).range([hauteur - marge.bas, marge.haut]);
         
-                let xAxis = g => g
-                    .attr("transform", `translate(0, ${hauteur - marge.bas})`)
-                    .call(d3.axisBottom(xScale));
+                let xAxis = g => g.attr("transform", `translate(0, ${hauteur - marge.bas})`).call(d3.axisBottom(xScale));
+                let yAxis = g => g.attr("transform", `translate(${marge.gauche},0)`).call(d3.axisLeft(yScale));
         
-                let yAxis = g => g
-                    .attr("transform", `translate(${marge.gauche},0)`)
-                    .call(d3.axisLeft(yScale));
-        
-                // Échelle de couleurs pour différencier les années
+                // Boîtes
                 let colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-                    .domain(annees);
+                    .domain(boxData.map(d => d.annee));
         
-                // Boîtes (Q1 -> Q3)
                 svg.selectAll(".box").data(boxData).join("rect")
                     .classed("box", true)
                     .transition().duration(500)
@@ -550,7 +553,7 @@ Promise.all(promises)
                     .attr("y", d => yScale(d.q3))
                     .attr("width", xScale.bandwidth() - 5)
                     .attr("height", d => yScale(d.q1) - yScale(d.q3))
-                    .style("fill", d => colorScale(d.annee)) // Assignation des couleurs
+                    .style("fill", d => colorScale(d.annee))
                     .style("opacity", 0.7)
                     .style("stroke", "black")
                     .style("stroke-width", 1.5);
@@ -566,7 +569,7 @@ Promise.all(promises)
                     .style("stroke", "red")
                     .style("stroke-width", 2);
         
-                // Whiskers (min/max)
+                // Whiskers
                 svg.selectAll(".whisker").data(boxData.flatMap(d => [d.min, d.max])).join("line")
                     .classed("whisker", true)
                     .transition().duration(500)
@@ -594,7 +597,7 @@ Promise.all(promises)
             }
         
             updateGraph();
-        }
+        }        
 
         function creerGraphRepartitionFaits() {
             let graph = d3.select('#graphRepartitionFaits')

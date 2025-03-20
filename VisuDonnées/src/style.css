@@ -36,7 +36,7 @@ body {
   font-weight: bold; /* Met le texte en gras pour plus de lisibilité */
 }
 
-#resetZoom {
+#resetZoom, #toggleScale {
   background-color:rgb(31, 119, 180);
 }
 
