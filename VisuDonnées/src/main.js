@@ -596,7 +596,10 @@ Promise.all(promises)
                     .padding(0.2);
         
                 let maxVal = d3.max(boxData, d => d.max);
-                let yScale = d3.scaleLinear()
+                /*let yScale = d3.scaleLinear()
+                    .domain([0, maxVal + 10])
+                    .range([hauteur - marge.bas, marge.haut]);*/
+                let yScale = d3.scalePow().exponent(2)
                     .domain([0, maxVal + 10])
                     .range([hauteur - marge.bas, marge.haut]);
         
