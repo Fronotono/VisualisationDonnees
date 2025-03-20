@@ -140,17 +140,22 @@
                     <h2>Identification des groupes et des cas particuliers parmi les départements</h2>
                 </div>
 
-                <div id="graphEvolCarteCourbes" class="container p-4">
-                    <h3>Évolution des faits par département (Carte + Courbes)</h3>
-                    <svg class="graph" id="affichage"></svg>
-                    <svg id="depSelector"></svg>
+                <div id="carteFaits" class="container p-4 ">
+                    <h3>Visualisation géographique d'un fait divers en France</h3>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
-                        <label >
+                        <label>
                             <p>Le fait étudié :</p>
                             <select class="listFait"></select>
-                        </label>                    
+                        </label> 
+                        <label>
+                            <p>L'année étudié :</p>
+                            <select class="listAnnee"></select>
+                        </label> 
                     </div>
                 </div>
+
+                
 
                 <hr class="line">
 
@@ -182,6 +187,7 @@
                     </div>
                 </div>
 
+                <!-- Graphe non satisfaisant
                 <hr class="line">
                 
                 <div id="graphRepartitionFaits" class="container p-4">
@@ -197,7 +203,7 @@
                             <select class="listAnnee"></select>
                         </label>            
                     </div>
-                </div>
+                </div>-->
 
             </div>
 
@@ -208,18 +214,15 @@
                     <h2>Définition d'analyses visuelles supplémentaires</h2>
                 </div>
 
-                <div id="carteFaits" class="container p-4 ">
-                    <h3>Visualisation géographique d'un fait divers en France</h3>
-                    <svg class="graph"></svg>
+                <div id="graphEvolCarteCourbes" class="container p-4">
+                    <h3>Évolution des faits par département (Carte + Courbes)</h3>
+                    <svg class="graph" id="affichage"></svg>
+                    <svg id="depSelector"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
+                        <label >
                             <p>Le fait étudié :</p>
                             <select class="listFait"></select>
-                        </label> 
-                        <label>
-                            <p>L'année étudié :</p>
-                            <select class="listAnnee"></select>
-                        </label> 
+                        </label>                    
                     </div>
                 </div>
 
