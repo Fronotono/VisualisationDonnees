@@ -32,8 +32,7 @@ Promise.all(promises)
         let tempp = faits.filter( d => ! volsFaits.includes(d) && ! violsFaits.includes(d) && ! destructionFaits.includes(d))
         console.log(tempp)
 
-        d3.selectAll('svg').style('width',largeur).style('height',hauteur)
-        const dataToHiearachier = dataToHiearachie();
+        d3.selectAll('.graph').style('width',largeur).style('height',hauteur)
 
         // Création du tooltip
         const tooltip = d3.select(".tooltip");
@@ -54,7 +53,7 @@ Promise.all(promises)
         creerGraphEvolutionDep();
         creerGraphEvolutionCarteCourbes();
         creerBoxPlot();
-        creerGraphRepartitionFaits();
+        //creerGraphRepartitionFaits();
         creerGraphDiffAnnee()
         creerCarteFaits();
         creerTreeMap();
@@ -231,6 +230,17 @@ Promise.all(promises)
                 .attr('y', d => yScale(getTotalFait(d,fait)))
                 .style("fill", "rgb(31, 119, 180)")
                 .classed('total',true)
+                .on("mouseenter", (event, d) => {
+                    tooltip.style("opacity", "100")
+                        .text(getTotalFait(d,fait)+' fait(s)');
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    tooltip.style("opacity", "0")
+                })
 
             s.enter().append('rect').merge(s)
                 .attr("height", d =>  yScale(0) - yScale(refinedData[d][fait][dep]))
@@ -240,6 +250,17 @@ Promise.all(promises)
                 .style("fill", "lightgreen")
                 .classed('ind',true)
                 .raise()
+                .on("mouseenter", (event, d) => {
+                    tooltip.style("opacity", "100")
+                        .html(refinedData[d][fait][dep]+' fait(s)<br>'+ (refinedData[d][fait][dep] / getTotalFait(d,fait) * 100).toFixed(2) +'% du total');
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    tooltip.style("opacity", "0")
+                })  
 
             axeX.call(xAxis);
             axeY.call(yAxis);
@@ -260,12 +281,36 @@ Promise.all(promises)
                     .duration(duration)
                     .attr('y', d => yScale(getTotalFait(d,fait)))
                     .attr("height", d =>  yScale(0) - yScale(getTotalFait(d,fait)))
+                graph.selectAll('.total')
+                    .on("mouseenter", (event, d) => {
+                        tooltip.style("opacity", "100")
+                            .text(getTotalFait(d,fait)+' fait(s)');
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("top", (event.pageY + 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseleave", () => {
+                        tooltip.style("opacity", "0")
+                    })
 
                 graph.selectAll('.ind').data(annees)
+                    .on("mouseenter", (event, d) => {
+                        tooltip.style("opacity", "100")
+                            .html(refinedData[d][fait][dep]+' fait(s)<br>'+ (refinedData[d][fait][dep] / getTotalFait(d,fait) * 100).toFixed(2) +'% du total');
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("top", (event.pageY + 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseleave", () => {
+                        tooltip.style("opacity", "0")
+                    })                
                     .transition()
                     .duration(duration)
                     .attr('y', d => yScale(refinedData[d][fait][dep]))
                     .attr("height", d =>  yScale(0) - yScale(refinedData[d][fait][dep]))
+
                 
                 graph.select('.axeY').transition().duration(500).call(yAxis)
             }
@@ -301,7 +346,18 @@ Promise.all(promises)
                 .attr('y', d => yScale(refinedData[d][fait][dep]))
                 .attr('height', d => yScale(0) - yScale(refinedData[d][fait][dep]))
                 .attr('width', xScale.bandwidth() - 1)
-                .style('fill', 'rgb(31, 119, 180)');
+                .style('fill', 'rgb(31, 119, 180)')
+                .on("mouseenter", (event, d) => {
+                    tooltip.style("opacity", "100")
+                        .text(refinedData[d][fait][dep]+' fait(s)');
+                })
+                .on("mousemove", (event) => {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseleave", () => {
+                    tooltip.style("opacity", "0")
+                })
         
             axeX.call(xAxis);
             axeY.call(yAxis);
@@ -323,6 +379,19 @@ Promise.all(promises)
                     .attr('y', d => yScale(refinedData[d][fait][dep]))
                     .attr('height', d => yScale(0) - yScale(refinedData[d][fait][dep]))
                     .style('fill', 'rgb(31, 119, 180)');
+
+                svg.selectAll('rect')
+                    .on("mouseenter", (event, d) => {
+                        tooltip.style("opacity", "100")
+                            .text(refinedData[d][fait][dep]+' fait(s)');
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("top", (event.pageY + 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseleave", () => {
+                        tooltip.style("opacity", "0")
+                    })
         
                 svg.select('.axeY').transition().duration(500).call(yAxis);
             }
@@ -459,6 +528,7 @@ Promise.all(promises)
                     .y((d,i) =>yScale(d))
 
                 graph.select('svg').selectAll('.line').data(departements)
+
                     .transition()
                     .duration(duration)
                     .style('fill','none')
@@ -469,7 +539,7 @@ Promise.all(promises)
                         } 
                         return '1px'
                     })
-                    .attr('d', d => line(getEvolFait(fait,d)))
+                    .attr('d', d => line(getEvolFait(fait,d)))        
 
                     d3.select('#graphEvolCarteCourbes').select('#depSelector').selectAll('.departement')
                     .style('fill', (d,i)=>model[3].col[fromCodeJSONtoCodeData(d)])
@@ -599,7 +669,7 @@ Promise.all(promises)
             updateGraph();
         }        
 
-        function creerGraphRepartitionFaits() {
+        /*function creerGraphRepartitionFaits() {
             let graph = d3.select('#graphRepartitionFaits')
 
             let svg = graph.select('svg')
@@ -662,7 +732,7 @@ Promise.all(promises)
                 
                 graph.select('.axeY').transition().duration(500).call(yAxis)
             }
-        }  
+        }  */
         
         function creerGraphDiffAnnee() {
             let graph = d3.select("#graphDiffAnnee");
@@ -745,7 +815,7 @@ Promise.all(promises)
             let path = d3.geoPath().projection(projection);
                 
             mapPromise.then(france => {
-                    graph.select('svg').append('g').classed('map',true).selectAll().data(france.features).enter().append('path')
+                    graph.select('svg').append('g').classed('graph',true).classed('map',true).selectAll().data(france.features).enter().append('path')
                         .attr('d', path)
                         .classed('departement',true)
                         .style('fill', d => {
@@ -876,7 +946,7 @@ Promise.all(promises)
        
         function creerTreeMap() {
             model['treeMap'] = {}
-            model['treeMap']['palette'] = [...d3.schemePaired, 'url("#pattern-two")']
+            model['treeMap']['palette'] = [...d3.schemePaired, 'rgb(255,255,0)']
         
             regions.forEach(
                 function(d,i){
@@ -1022,7 +1092,6 @@ Promise.all(promises)
                         .style('fill', '#000');
                 });
         }
-                
         }).catch(function(error) {
     console.error("Erreur lors du chargement des fichiers :", error);
 });

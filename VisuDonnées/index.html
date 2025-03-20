@@ -26,6 +26,15 @@
                 </pattern>
             </defs>
         </svg>-->
+        <svg width="0" height="0">
+            <defs>
+              <pattern id="hachures" patternUnits="userSpaceOnUse" width="10" height="10">
+                <line x1="0" y1="0" x2="10" y2="10" stroke="black" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect width="200" height="200" fill="url(#hachures)" />
+        </svg>
+          
 
         <div class="tooltip"></div>
 
@@ -81,7 +90,7 @@
                 
                 <div id="graphEvolFaits" class="container p-4">
                     <h3>Évolution du nombre de faits par année</h3>
-                    <svg></svg>       
+                    <svg class="graph"></svg>       
                 </div>
 
                 <hr class="line">
@@ -92,7 +101,7 @@
 
                 <div id="graphComparaisonFaits" class="container p-4">
                     <h3>Comparaison des faits : France vs Département sélectionné</h3>
-                    <svg></svg>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le fait étudié :</p>
@@ -109,7 +118,7 @@
 
                 <div id="graphEvolDep" class="container p-4 ">
                     <h3>Évolution des faits par département</h3>
-                    <svg></svg>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le fait étudié :</p>
@@ -131,23 +140,28 @@
                     <h2>Identification des groupes et des cas particuliers parmi les départements</h2>
                 </div>
 
-                <div id="graphEvolCarteCourbes" class="container p-4">
-                    <h3>Évolution des faits par département (Carte + Courbes)</h3>
-                    <svg id="affichage"></svg>
-                    <svg id="depSelector"></svg>
+                <div id="carteFaits" class="container p-4 ">
+                    <h3>Visualisation géographique d'un fait divers en France</h3>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
-                        <label >
+                        <label>
                             <p>Le fait étudié :</p>
                             <select class="listFait"></select>
-                        </label>                    
+                        </label> 
+                        <label>
+                            <p>L'année étudié :</p>
+                            <select class="listAnnee"></select>
+                        </label> 
                     </div>
                 </div>
+
+                
 
                 <hr class="line">
 
                 <div id="boxplot" class="container p-4">
                     <h3>Boîte à moustaches des faits par année</h3>
-                    <svg></svg>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le fait étudié :</p>
@@ -161,7 +175,7 @@
 
                 <div id="graphDiffAnnee" class="container p-4 ">
                     <h3>Evolution d'un fait d'une année à l'autre en fonction d'un département</h3>
-                    <svg></svg>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le fait étudié :</p>
@@ -174,11 +188,12 @@
                     </div>
                 </div>
 
+                <!-- Graphe non satisfaisant
                 <hr class="line">
                 
                 <div id="graphRepartitionFaits" class="container p-4">
                     <h3>Répartition des faits par type</h3>
-                    <svg></svg>
+                    <svg class="graph"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le département étudié :</p>
@@ -189,7 +204,7 @@
                             <select class="listAnnee"></select>
                         </label>            
                     </div>
-                </div>
+                </div>-->
 
             </div>
 
@@ -200,18 +215,15 @@
                     <h2>Définition d'analyses visuelles supplémentaires</h2>
                 </div>
 
-                <div id="carteFaits" class="container p-4 ">
-                    <h3>Visualisation géographique d'un fait divers en France</h3>
-                    <svg></svg>
+                <div id="graphEvolCarteCourbes" class="container p-4">
+                    <h3>Évolution des faits par département (Carte + Courbes)</h3>
+                    <svg class="graph" id="affichage"></svg>
+                    <svg id="depSelector"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
-                        <label>
+                        <label >
                             <p>Le fait étudié :</p>
                             <select class="listFait"></select>
-                        </label> 
-                        <label>
-                            <p>L'année étudié :</p>
-                            <select class="listAnnee"></select>
-                        </label> 
+                        </label>                    
                     </div>
                 </div>
 
@@ -219,8 +231,8 @@
 
                 <div id="graphTreeMap" class="container p-4">
                     <h3>Nombre de faits par année par département</h3>
-                    <svg></svg>
-                    <svg class="legend"></svg>
+                    <svg class="graph"></svg>
+                    <svg class="graph legend"></svg>
                     <div id="selecteurs" class="d-flex justify-content-around">
                         <label>
                             <p>Le fait étudié :</p>
