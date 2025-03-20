@@ -32,8 +32,7 @@ Promise.all(promises)
         let tempp = faits.filter( d => ! volsFaits.includes(d) && ! violsFaits.includes(d) && ! destructionFaits.includes(d))
         console.log(tempp)
 
-        d3.selectAll('svg').style('width',largeur).style('height',hauteur)
-        const dataToHiearachier = dataToHiearachie();
+        d3.selectAll('.graph').style('width',largeur).style('height',hauteur)
 
         // Création du tooltip
         const tooltip = d3.select(".tooltip");
@@ -742,7 +741,7 @@ Promise.all(promises)
             let path = d3.geoPath().projection(projection);
                 
             mapPromise.then(france => {
-                    graph.select('svg').append('g').classed('map',true).selectAll().data(france.features).enter().append('path')
+                    graph.select('svg').append('g').classed('graph',true).classed('map',true).selectAll().data(france.features).enter().append('path')
                         .attr('d', path)
                         .classed('departement',true)
                         .style('fill', d => {
@@ -873,7 +872,8 @@ Promise.all(promises)
 
         function creerTreeMap() {
             model['treeMap']  = {}
-            model['treeMap']['palette'] = [...d3.schemePaired, 'url("#pattern-two")']
+            model['treeMap']['palette'] = [...d3.schemePaired, 'rgb(255,255,0)']
+            //model['treeMap']['palette'] = d3.schemePaired;
 
             regions.forEach(
                 function(d,i){
@@ -883,8 +883,8 @@ Promise.all(promises)
             )
 
             let graph = d3.select('#graphTreeMap');
-            let annee = getValue(d3.select('.listAnnee'));
-            let fait = getValue(d3.select('.listFait'));
+            let annee = getValue(graph.select('.listAnnee'));
+            let fait = getValue(graph.select('.listFait'));
 
             let filteredData = {
                 name: annee,
